@@ -127,7 +127,7 @@ class StarvationDetectorSpec extends AkkaSpec(s"""
             }
           }
       }
-      "not log a warning if the dispatcher is busy for an amount of small non-blocking tasks" ignore {
+      "not log a warning if the dispatcher is busy for an amount of small non-blocking tasks" in {
         // Ignore because it's flaky in CI
         if (Runtime.getRuntime.availableProcessors <= 2)
           pending
