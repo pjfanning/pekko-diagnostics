@@ -18,6 +18,7 @@ import org.apache.pekko.event.LoggingAdapter
 import com.typesafe.config.Config
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -369,10 +370,12 @@ object StarvationDetector {
           s"Failed to extract thread prefix, unsupported executor service type [${es.getClass.toString}], starvation will not be detected for this dispatcher.")
     }
     private def threadNamePrefix(es: ExecutorService): Option[String] = es match {
-      case ak: PekkoForkJoinPool   => Some(getAkkaFJPFactory(ak).name)
+      case fjp: PekkoForkJoinPool  => Some(getPekkoFJPFactory(fjp).name)
       case tpe: ThreadPoolExecutor => Some(getThreadPoolExecutorFactory(tpe).name)
       case ap: AffinityPool        => Some(getAffinityPoolFactory(ap).name)
-      case _                       => None
+      case fjp: ForkJoinPool if fjp.getFactory.getClass.getName.startsWith("org.apache.pekko.dispatch") =>
+        Some(getPekkoFJPFactory(fjp).name)
+      case _ => None
     }
     private def isSleepingFJThread(trace: StackTrace): Boolean =
       trace.length >= 2 &&
@@ -506,7 +509,7 @@ object StarvationDetector {
 
     d => m.invoke(d).asInstanceOf[ExecutorServiceDelegate]
   }
-  private lazy val getAkkaFJPFactory: PekkoForkJoinPool => MonitorableThreadFactory = {
+  private lazy val getPekkoFJPFactory: ForkJoinPool => MonitorableThreadFactory = {
     val f = classOf[PekkoForkJoinPool].getSuperclass.getDeclaredField("factory")
     f.setAccessible(true)
 
