@@ -2,7 +2,7 @@
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package akka.diagnostics
+package com.github.pjfanning.pekko.diagnostics
 
 import java.net.InetAddress
 import java.util.Locale
@@ -16,11 +16,11 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-import akka.actor.ActorSystem
-import akka.actor.ClassicActorSystemProvider
-import akka.actor.ExtendedActorSystem
-import akka.dispatch.ThreadPoolConfig
-import akka.event.Logging
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.actor.ClassicActorSystemProvider
+import org.apache.pekko.actor.ExtendedActorSystem
+import org.apache.pekko.dispatch.ThreadPoolConfig
+import org.apache.pekko.event.Logging
 import com.typesafe.config._
 import org.apache.commons.text.similarity.LevenshteinDistance
 
@@ -59,7 +59,7 @@ object ConfigChecker {
   def main(args: Array[String]): Unit = {
 
     val config = ConfigFactory
-      .parseString("akka.diagnostics.checker.fail-on-warning = on")
+      .parseString"pekko.diagnostics.checker.fail-on-warning = on")
       .withFallback(ConfigFactory.load())
 
     Try(ActorSystem("ConfigChecker", config)) match {
@@ -101,7 +101,7 @@ object ConfigChecker {
       case LogWarnings =>
         val asyncCheckAfter =
           provider.classicSystem.settings.config
-            .getDuration("akka.diagnostics.checker.async-check-after", MILLISECONDS)
+            .getDuration"pekko.diagnostics.checker.async-check-after", MILLISECONDS)
             .millis
         if (asyncCheckAfter > Duration.Zero)
           provider.classicSystem.scheduler.scheduleOnce(asyncCheckAfter)(runChecks())(provider.classicSystem.dispatcher)
@@ -123,7 +123,7 @@ object ConfigChecker {
     s"${warning.message} Related config properties: [${warning.propertiesAsString}]. " +
     (if (defaultsAsString == "") "" else s"Corresponding default values: [$defaultsAsString]. ") +
     s"You may disable this check by adding [${warning.checkerKey}] to configuration string list " +
-    s"akka.diagnostics.checker.disabled-checks."
+    s"pekko.diagnostics.checker.disabled-checks."
   }
 
   private def recommendation(msg: String): String =
@@ -134,8 +134,8 @@ object ConfigChecker {
    */
   private object Internal {
     def mode(config: Config): Mode =
-      if (config.getBoolean("akka.diagnostics.checker.enabled")) {
-        if (config.getBoolean("akka.diagnostics.checker.fail-on-warning")) FailOnWarnings
+      if (config.getBoolean"pekko.diagnostics.checker.enabled")) {
+        if (config.getBoolean"pekko.diagnostics.checker.fail-on-warning")) FailOnWarnings
         else LogWarnings
       } else Disabled
 
@@ -169,8 +169,8 @@ object ConfigChecker {
  * The `ConfigChecker will try to find potential configuration issues. It is run when the actor system is started. It
  * also possible to run it as a Java main program, see [[ConfigChecker#main]].
  *
- * Detailed documentation can be found in the `akka.diagnostics.checker` section of the reference.conf and in the
- * "Configuration Checker" section of the Akka Reference Documentation.
+ * Detailed documentation can be found in the `pekko.diagnostics.checker` section of the reference.conf and in the
+ * "Configuration Checker" section of the Pekko Reference Documentation.
  */
 class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Config) {
   import ConfigChecker._
@@ -179,14 +179,14 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     this(system, system.settings.config, ConfigFactory.defaultReference(system.dynamicAccess.classLoader))
 
   private val disabledChecks: Set[String] =
-    config.getStringList("akka.diagnostics.checker.disabled-checks").asScala.toSet
+    config.getStringList"pekko.diagnostics.checker.disabled-checks").asScala.toSet
 
   private val confirmedPowerUserSettings: Set[String] =
-    config.getStringList("akka.diagnostics.checker.confirmed-power-user-settings").asScala.toSet
-  private[akka] val (powerUserSettings: Set[String], powerUserWildcardSettings: Set[String]) = {
+    config.getStringList"pekko.diagnostics.checker.confirmed-power-user-settings").asScala.toSet
+  private[diagnostics] val (powerUserSettings: Set[String], powerUserWildcardSettings: Set[String]) = {
     val fullList =
       config
-        .getStringList("akka.diagnostics.checker.power-user-settings")
+        .getStringList"pekko.diagnostics.checker.power-user-settings")
         .asScala
         .toSet
         .diff(confirmedPowerUserSettings)
@@ -198,19 +198,19 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private val disabledTypoSections: Set[String] = {
     config
-      .getStringList("akka.diagnostics.checker.disabled-typo-sections")
+      .getStringList"pekko.diagnostics.checker.disabled-typo-sections")
       .asScala
       .toSet
-      .union(config.getStringList("akka.diagnostics.checker.confirmed-typos").asScala.toSet)
+      .union(config.getStringList"pekko.diagnostics.checker.confirmed-typos").asScala.toSet)
   }
 
-  private val defaultDispatcherPath = "akka.actor.default-dispatcher"
-  private val internalDispatcherPath = "akka.actor.internal-dispatcher"
-  private val autoDownPath = "akka.cluster.auto-down-unreachable-after"
+  private val defaultDispatcherPath = "pekko.actor.default-dispatcher"
+  private val internalDispatcherPath = "pekko.actor.internal-dispatcher"
+  private val autoDownPath = "pekko.cluster.auto-down-unreachable-after"
   private val knownDispatcherTypes = Set("PinnedDispatcher", "Dispatcher")
   private val knownExecutorTypes =
     Set("default-executor", "fork-join-executor", "thread-pool-executor", "affinity-pool-executor")
-  private val knownDispatcherPrefixes = Set("akka.", "lagom.", "play.", "cassandra-plugin-", "kafka.")
+  private val knownDispatcherPrefixes = Set"pekko.", "lagom.", "play.", "cassandra-plugin-", "kafka.")
 
   private val knownSettings = {
     import scala.collection.JavaConverters._
@@ -226,7 +226,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
         }
         .toVector
 
-    collectLeaves("akka", reference.getConfig("akka").root)
+    collectLeaves("pekko", reference.getConfig("pekko").root)
   }
 
   private val maxSimilarDistance = 5
@@ -277,7 +277,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   /**
    * INTERNAL API
    */
-  private[akka] def isModifiedPowerUserSetting(path: String): Boolean =
+  private[diagnostics] def isModifiedPowerUserSetting(path: String): Boolean =
     try {
       !confirmedPowerUserSettings(path) &&
       (!reference.hasPath(path) || config.getValue(path) != reference.getValue(path)) &&
@@ -302,13 +302,13 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
       // Using java.util.LinkedList because we use ConfigUtil to join these path elements.
       val pathList = new java.util.LinkedList[String]
 
-      val deploymentReference = reference.getConfig("akka.actor.deployment.default")
-      lazy val grpcClientReference = reference.getConfig("""akka.grpc.client."*"""")
+      val deploymentReference = reference.getConfig"pekko.actor.deployment.default")
+      lazy val grpcClientReference = if (reference.hasPath("""pekko.grpc.client."*"""")) reference.getConfig("""pekko.grpc.client."*"""") else reference
 
       def inDeploymentSection: Boolean =
-        pathList.size > 4 && pathList.asScala.startsWith(Seq("akka", "actor", "deployment"))
+        pathList.size > 4 && pathList.asScala.startsWith(Seq("pekko", "actor", "deployment"))
       def inGrpcClientSection: Boolean =
-        pathList.size > 4 && pathList.asScala.startsWith(Seq("akka", "grpc", "client"))
+        pathList.size > 4 && pathList.asScala.startsWith(Seq("pekko", "grpc", "client"))
 
       def checkConfigObject(obj: ConfigObject): Unit = {
         val iter = obj.entrySet().iterator()
@@ -346,8 +346,8 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
                   w += new ConfigWarning(
                     typoCheckKey,
-                    s"$p is not an Akka configuration setting.$didYouMeanSentence Is it a typo or is it placed in the wrong section? " +
-                    """Application specific properties should be placed outside the "akka" config tree.""",
+                    s"$p is not a Pekko configuration setting.$didYouMeanSentence Is it a typo or is it placed in the wrong section? " +
+                    """Application specific properties should be placed outside the "pekko" config tree.""",
                     List(p),
                     Nil)
                 }
@@ -360,7 +360,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
                   s"$p is an advanced configuration setting. Make sure that you fully understand " +
                   "the implications of changing the default value. You can confirm that you know " +
                   s"the meaning of this configuration setting by adding [$p] to configuration string list " +
-                  "akka.diagnostics.checker.confirmed-power-user-settings.")
+                  "pekko.diagnostics.checker.confirmed-power-user-settings.")
 
               pathList.removeLast()
 
@@ -373,8 +373,8 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
         pathList.removeLast()
       }
 
-      pathList.add("akka")
-      checkConfigObject(config.getConfig("akka").root)
+      pathList.add("pekko")
+      checkConfigObject(config.getConfig("pekko").root)
 
       w.result()
     }
@@ -383,7 +383,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   /**
    * INTERNAL API
    */
-  private[akka] def findDispatchers(): Map[String, Config] = {
+  private[diagnostics] def findDispatchers(): Map[String, Config] = {
     var result = Map.empty[String, Config]
     // stack of the path elements
     // Using java.util.LinkedList because we use ConfigUtil to join these path elements.
@@ -435,7 +435,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
       val cfgWithFallback = cfg.withFallback(system.dispatchers.defaultDispatcherConfig)
       Try { w ++= checkDispatcherThroughput(path, cfgWithFallback) }
       Try { w ++= checkForkJoinPoolSize(path, cfgWithFallback) }
-      if (!path.startsWith("akka."))
+      if (!path.startsWith"pekko."))
         w ++= checkTypoInDispatcherSection(path, cfg)
     }
     w
@@ -467,9 +467,9 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
               if (!disabledTypoSections.exists(fullPath.startsWith) && !defaultDispatcherReference.hasPath(p)) {
                 w += new ConfigWarning(
                   "typo",
-                  s"$fullPath is not an Akka dispatcher configuration setting. Is it a typo or is it placed in the wrong section? " +
+                  s"$fullPath is not a Pekko dispatcher configuration setting. Is it a typo or is it placed in the wrong section? " +
                   s"If this is not a dispatcher setting you may disable this check by adding [$fullPath] to configuration string list " +
-                  s"akka.diagnostics.checker.confirmed-typos.",
+                  s"pekko.diagnostics.checker.confirmed-typos.",
                   List(fullPath),
                   Nil)
               }
@@ -499,11 +499,11 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkProvider(): List[ConfigWarning] =
     ifEnabled("actor-ref-provider") { checkerKey =>
-      val path = "akka.actor.provider"
+      val path = "pekko.actor.provider"
       val supported = Set(
-        "akka.actor.LocalActorRefProvider",
-        "akka.remote.RemoteActorRefProvider",
-        "akka.cluster.ClusterActorRefProvider",
+        "pekko.actor.LocalActorRefProvider",
+        "pekko.remote.RemoteActorRefProvider",
+        "pekko.cluster.ClusterActorRefProvider",
         "local",
         "remote",
         "cluster")
@@ -518,7 +518,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkJvmExitOnFatalError(): List[ConfigWarning] =
     ifEnabled("jvm-exit-on-fatal-error") { checkerKey =>
-      val path = "akka.jvm-exit-on-fatal-error"
+      val path = "pekko.jvm-exit-on-fatal-error"
       if (config.getBoolean(path)) Nil
       else
         warn(
@@ -530,7 +530,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def dispatcherPoolSize(c: Config): Int = {
     val dispatcherType = c.getString("type")
-    if (dispatcherType == "PinnedDispatcher" || dispatcherType == "akka.testkit.CallingThreadDispatcherConfigurator")
+    if (dispatcherType == "PinnedDispatcher" || dispatcherType == "pekko.testkit.CallingThreadDispatcherConfigurator")
       1 // a PinnedDispatcher is not really size 1, but that is the best we can guess
     else if (c.getString("executor") == "thread-pool-executor") {
       val min = c.getInt("thread-pool-executor.core-pool-size-min")
@@ -597,7 +597,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
       val path = defaultDispatcherPath
       val dispatcherType = config.getString(path + ".type")
       if (dispatcherType == "PinnedDispatcher" ||
-        dispatcherType == "akka.testkit.CallingThreadDispatcherConfigurator")
+        dispatcherType == "pekko.testkit.CallingThreadDispatcherConfigurator")
         warn(
           checkerKey,
           path,
@@ -642,7 +642,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkNumberOfDispatchers(dispatchers: Map[String, Config]): List[ConfigWarning] =
     ifEnabled("dispatcher-count") { checkerKey =>
-      val customDispatchers = dispatchers.collect { case (p, _) if !isAkkaSystemDispatcher(p) => p }
+      val customDispatchers = dispatchers.collect { case (p, _) if !isPekkoSystemDispatcher(p) => p }
       if (customDispatchers.size > 6)
         warn(
           checkerKey,
@@ -653,7 +653,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
       else Nil
     }
 
-  private def isAkkaSystemDispatcher(configPath: String): Boolean =
+  private def isPekkoSystemDispatcher(configPath: String): Boolean =
     knownDispatcherPrefixes.exists(prefix => configPath.startsWith(prefix))
 
   private def checkTotalDispatcherPoolSize(dispatchers: Map[String, Config]): List[ConfigWarning] =
@@ -661,7 +661,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
       val sizes = dispatchers.collect {
         // FIXME does the filtering really make sense here, don't we want to include the Akka
         // dispatcher pool sizes as well?
-        case (p, c) if !isAkkaSystemDispatcher(p) =>
+        case (p, c) if !isPekkoSystemDispatcher(p) =>
           val cfgWithFallback = c.withFallback(system.dispatchers.defaultDispatcherConfig)
           p -> Try(dispatcherPoolSize(cfgWithFallback)).getOrElse(0)
       }
@@ -678,10 +678,10 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     }
 
   private def isRemoteConfigAvailable: Boolean = {
-    val provider = config.getString("akka.actor.provider")
+    val provider = config.getString("pekko.actor.provider")
     // check existence of a property from reference.conf that will unlikely be defined elsewhere
-    reference.hasPath("akka.actor.serializers.daemon-create") &&
-    (provider == "remote" || provider == "akka.remote.RemoteActorRefProvider" || isClusterConfigAvailable)
+    reference.hasPath("pekko.actor.serializers.daemon-create") &&
+    (provider == "remote" || provider == "pekko.remote.RemoteActorRefProvider" || isClusterConfigAvailable)
   }
 
   private def checkRemote(): Vector[ConfigWarning] =
@@ -699,7 +699,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkRemoteDispatcher(): List[ConfigWarning] =
     ifEnabled("remote-dispatcher") { checkerKey =>
-      val path = "akka.remote.artery.advanced.use-dispatcher"
+      val path = "pekko.remote.artery.advanced.use-dispatcher"
       if (config.getString(path) == defaultDispatcherPath)
         warn(
           checkerKey,
@@ -713,7 +713,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkRemoteWatchFailureDetector(): List[ConfigWarning] =
     ifEnabled("remote-watch-failure-detector") { checkerKey =>
-      val path = "akka.remote.watch-failure-detector"
+      val path = "pekko.remote.watch-failure-detector"
 
       val heartbeatInterval = config.getDuration(path + ".heartbeat-interval", MILLISECONDS).millis
       val acceptable = config.getDuration(path + ".acceptable-heartbeat-pause", MILLISECONDS).millis
@@ -776,14 +776,14 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkHostname(): List[ConfigWarning] =
     ifEnabled("hostname") { checkerKey =>
-      val path = "akka.remote.artery.enabled"
+      val path = "pekko.remote.artery.enabled"
       if (config.getBoolean(path)) {
         // artery
-        config.getString("akka.remote.artery.canonical.hostname") match {
+        config.getString("pekko.remote.artery.canonical.hostname") match {
           case "<getHostAddress>" =>
             warn(
               checkerKey,
-              "akka.remote.artery.canonical.hostname",
+              "pekko.remote.artery.canonical.hostname",
               s"hostname is set to <getHostAddress>, which means that `InetAddress.getLocalHost.getHostAddress` " +
               "will be used to resolve the hostname. That can result in wrong hostname in some environments, " +
               """such as "127.0.1.1". Define the hostname explicitly instead. """ +
@@ -791,7 +791,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
           case "<getHostName>" =>
             warn(
               checkerKey,
-              "akka.remote.artery.canonical.hostname",
+              "pekko.remote.artery.canonical.hostname",
               s"hostname is set to <getHostName>, which means that `InetAddress.getLocalHost.getHostAddress` " +
               "will be used to resolve the hostname. That can result in wrong hostname in some environments, " +
               """such as "127.0.1.1". Define the hostname explicitly instead. """ +
@@ -803,12 +803,12 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkArteryNotEnabled(): List[ConfigWarning] =
     ifEnabled("remote-artery-disabled") { checkerKey =>
-      val path = "akka.remote.artery.enabled"
+      val path = "pekko.remote.artery.enabled"
       if (!config.getBoolean(path)) {
         warn(
           checkerKey,
           path,
-          "Classic remoting is deprecated since Akka 2.6.0 and will be removed in Akka 2.8.0. Use Artery instead.")
+          "Classic remoting is not supported in Pekko. Use Artery instead.")
       } else Nil
     }
 
@@ -824,17 +824,17 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
             s"You have configured maximum-frame-size to [${config.getBytes(path)} bytes]. We recommend against " +
             "sending too large messages, since that may cause other messages to be delayed. For example, it's " +
             "important that failure detector heartbeat messages have a chance to get through without too long delays. " +
-            "Try to split up large messages into smaller chunks, or use another communication channel (HTTP, Akka IO) " +
+            "Try to split up large messages into smaller chunks, or use another communication channel (HTTP, Pekko IO) " +
             "for large payloads.")
         else Nil
       }
-      List(checkFrameSizeAt("akka.remote.artery.advanced.maximum-frame-size")).flatten
+      List(checkFrameSizeAt("pekko.remote.artery.advanced.maximum-frame-size")).flatten
     }
   }
 
   private def checkRemoteDispatcherSize(): List[ConfigWarning] =
     ifEnabled("default-remote-dispatcher-size") { checkerKey =>
-      val path = "akka.remote.default-remote-dispatcher"
+      val path = "pekko.remote.default-remote-dispatcher"
       val size = dispatcherPoolSize(config.getConfig(path).withFallback(system.dispatchers.defaultDispatcherConfig))
       if (size < 2)
         warn(checkerKey, path, s"Don't use too small pool size [$size] for the default-remote-dispatcher-size.")
@@ -843,21 +843,21 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkPreferClusterToRemote(): List[ConfigWarning] =
     ifEnabled("remote-prefer-cluster") { checkerKey =>
-      val path = "akka.actor.provider"
-      if (config.getString(path) == "remote" || config.getString(path) == "akka.remote.RemoteActorRefProvider")
+      val path = "pekko.actor.provider"
+      if (config.getString(path) == "remote" || config.getString(path) == "pekko.remote.RemoteActorRefProvider")
         warn(
           checkerKey,
           path,
-          "Some features, such as remote watch, will be unsafe when using remote without Akka Cluster.")
+          "Some features, such as remote watch, will be unsafe when using remote without Pekko Cluster.")
       else Nil
     }
 
   private def checkCreateActorRemotely(): List[ConfigWarning] =
     ifEnabled("create-actor-remotely") { checkerKey =>
-      val path = """akka.actor.deployment."/...".remote""""
+      val path = """pekko.actor.deployment."/...".remote""""
 
       val isRemoteDeployment = config
-        .getConfig("""akka.actor.deployment""")
+        .getConfig("""pekko.actor.deployment""")
         .withoutPath("default")
         .entrySet()
         .iterator()
@@ -867,13 +867,13 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
         warn(
           checkerKey,
           path,
-          "Deploying an actor remotely is deprecated and not supported. As per https://doc.akka.io/docs/akka/current/remoting.html#creating-actors-remotely")
+          "Deploying an actor remotely is deprecated and not supported. As per https://pekko.apache.org/docs/pekko/current/remoting.html#creating-actors-remotely")
       else Nil
     }
 
   private def checkRemoteWatchFailureDetectorWithCluster(): List[ConfigWarning] =
     ifEnabled("remote-watch-failure-detector-with-cluster") { checkerKey =>
-      val path = "akka.remote.watch-failure-detector"
+      val path = "pekko.remote.watch-failure-detector"
       val path1 = s"$path.implementation-class"
       val path2 = s"$path.heartbeat-interval"
       val path3 = s"$path.threshold"
@@ -897,10 +897,10 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     }
 
   private def isClusterConfigAvailable: Boolean = {
-    val provider = config.getString("akka.actor.provider")
+    val provider = config.getString("pekko.actor.provider")
     // check existence of a property from reference.conf that will unlikely be defined elsewhere
-    reference.hasPath("akka.actor.serializers.akka-cluster") &&
-    (provider == "cluster" || provider == "akka.cluster.ClusterActorRefProvider")
+    reference.hasPath("pekko.actor.serializers.pekko-cluster") &&
+    (provider == "cluster" || provider == "pekko.cluster.ClusterActorRefProvider")
   }
 
   private def checkCluster(): Vector[ConfigWarning] =
@@ -919,7 +919,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
         warn(
           checkerKey,
           autoDownPath,
-          "Use Akka Split Brain Resolver instead of auto-down, since auto-down may cause the cluster to be " +
+          "Use Pekko Split Brain Resolver instead of auto-down, since auto-down may cause the cluster to be " +
           "split into two separate disconnected clusters when there are network partitions, long garbage " +
           "collection pauses or system overload. This is especially important if you use Cluster Singleton, " +
           "Cluster Sharding, or Persistence.")
@@ -929,13 +929,13 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   private def isAutoDownEnabled: Boolean = {
     // FIXME the auto-down check can be removed when we only use Akka 2.6
     config.hasPath(autoDownPath) && config.getString(autoDownPath).toLowerCase(Locale.ROOT) != "off" &&
-    config.getString("akka.cluster.downing-provider-class") == ""
+    config.getString("pekko.cluster.downing-provider-class") == ""
   }
 
   private def checkClusterFailureDetector(): List[ConfigWarning] =
     ifEnabled("cluster-failure-detector") { checkerKey =>
-      val path = "akka.cluster.failure-detector"
-      val reaperPath = "akka.cluster.unreachable-nodes-reaper-interval"
+      val path = "pekko.cluster.failure-detector"
+      val reaperPath = "pekko.cluster.unreachable-nodes-reaper-interval"
 
       val heartbeatInterval = config.getDuration(path + ".heartbeat-interval", MILLISECONDS).millis
       val acceptable = config.getDuration(path + ".acceptable-heartbeat-pause", MILLISECONDS).millis
@@ -1000,7 +1000,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkClusterDispatcher(): List[ConfigWarning] =
     ifEnabled("cluster-dispatcher") { checkerKey =>
-      val path = "akka.cluster.use-dispatcher"
+      val path = "pekko.cluster.use-dispatcher"
       val clusterDispatcher = config.getString(path)
       if (clusterDispatcher != "" && clusterDispatcher != defaultDispatcherPath && clusterDispatcher != internalDispatcherPath) {
         if (config.hasPath(clusterDispatcher)) {
@@ -1032,18 +1032,18 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def isSplitBrainResolverConfigAvailable: Boolean = {
     // check existence of a property from reference.conf
-    reference.hasPath("akka.cluster.split-brain-resolver.active-strategy")
+    reference.hasPath("pekko.cluster.split-brain-resolver.active-strategy")
   }
 
   private def checkSplitBrainResolver(): List[ConfigWarning] =
     ifEnabled("split-brain-resolver") { checkerKey =>
 
-      val sbrStrategyPath = "akka.cluster.split-brain-resolver.active-strategy"
+      val sbrStrategyPath = "pekko.cluster.split-brain-resolver.active-strategy"
       val sbrActive = isClusterConfigAvailable && isSplitBrainResolverConfigAvailable &&
         config.getString(sbrStrategyPath).toLowerCase(Locale.ROOT) != "off"
       if (sbrActive) {
-        val downRemovalPath = "akka.cluster.down-removal-margin"
-        val stableAfterPath = "akka.cluster.split-brain-resolver.stable-after"
+        val downRemovalPath = "pekko.cluster.down-removal-margin"
+        val stableAfterPath = "pekko.cluster.split-brain-resolver.stable-after"
 
         val stableAfter = config.getDuration(stableAfterPath, MILLISECONDS).millis
         val downRemoval = config.getString(downRemovalPath).toLowerCase(Locale.ROOT) match {

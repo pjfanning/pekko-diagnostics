@@ -2,7 +2,7 @@
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package akka.diagnostics
+package com.github.pjfanning.pekko.diagnostics
 
 import java.io.File
 import java.io.FileOutputStream
@@ -20,24 +20,24 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Try
 
-import akka.diagnostics.StarvationDetector.StarvationDetectorThread
-import akka.dispatch.Dispatchers
-import akka.dispatch.ExecutionContexts
-import akka.event.Logging
-import akka.testkit.EventFilter
+import com.github.pjfanning.pekko.diagnostics.StarvationDetector.StarvationDetectorThread
+import org.apache.pekko.dispatch.Dispatchers
+import org.apache.pekko.dispatch.ExecutionContexts
+import org.apache.pekko.event.Logging
+import org.apache.pekko.testkit.EventFilter
 
-class StarvationDetectorSpec extends AkkaSpec(s"""
-      akka.diagnostics.starvation-detector.check-interval              = 100ms # check more often
-      akka.diagnostics.starvation-detector.initial-delay               = 0     # no initial delay
-      akka.diagnostics.starvation-detector.max-delay-warning-threshold = 70ms  # make check tighter
-      akka.diagnostics.starvation-detector.warning-interval            = 20s   # must be longer than one antipattern test, so it is reported only once
-      akka.actor.default-dispatcher {
+class StarvationDetectorSpec extends PekkoSpec(s"""
+      pekko.diagnostics.starvation-detector.check-interval              = 100ms # check more often
+      pekko.diagnostics.starvation-detector.initial-delay               = 0     # no initial delay
+      pekko.diagnostics.starvation-detector.max-delay-warning-threshold = 70ms  # make check tighter
+      pekko.diagnostics.starvation-detector.warning-interval            = 20s   # must be longer than one antipattern test, so it is reported only once
+      pekko.actor.default-dispatcher {
         fork-join-executor {
           parallelism-min = ${StarvationDetectorSpec.numThreads}
           parallelism-max = ${StarvationDetectorSpec.numThreads}
         }
       }
-      akka.actor.internal-dispatcher {
+      pekko.actor.internal-dispatcher {
         fork-join-executor {
           parallelism-min = ${StarvationDetectorSpec.numThreads}
           parallelism-max = ${StarvationDetectorSpec.numThreads}
@@ -67,7 +67,7 @@ class StarvationDetectorSpec extends AkkaSpec(s"""
         }
       }
     """) {
-  import akka.diagnostics.StarvationDetectorSpec._
+  import com.github.pjfanning.pekko.diagnostics.StarvationDetectorSpec._
 
   "The StarvationDetector" should {
     def testsExecutor(dispatcherId: String): Unit = s"support $dispatcherId" should {
@@ -78,7 +78,7 @@ class StarvationDetectorSpec extends AkkaSpec(s"""
           dispatcher,
           system.log,
           StarvationDetectorSettings.fromConfig(
-            system.settings.config.getConfig("akka.diagnostics.starvation-detector")),
+            system.settings.config.getConfig("pekko.diagnostics.starvation-detector")),
           () => system.whenTerminated.isCompleted)
       }
       "log a warning if the dispatcher is busy for long periods of time" should {
@@ -241,5 +241,5 @@ class StarvationDetectorSpec extends AkkaSpec(s"""
 object StarvationDetectorSpec {
   val numThreads = 4
   val DefaultDispatcherId = Dispatchers.DefaultDispatcherId
-  val InternalDispatcherId = "akka.actor.internal-dispatcher"
+  val InternalDispatcherId = "pekko.actor.internal-dispatcher"
 }

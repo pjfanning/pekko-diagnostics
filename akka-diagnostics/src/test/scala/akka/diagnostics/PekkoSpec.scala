@@ -2,20 +2,20 @@
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package akka.diagnostics
+package com.github.pjfanning.pekko.diagnostics
 
 import java.lang.reflect.Modifier
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-import akka.actor.ActorSystem
-import akka.dispatch.Dispatchers
-import akka.event.Logging
-import akka.event.LoggingAdapter
-import akka.testkit.DeadLettersFilter
-import akka.testkit.TestEvent.Mute
-import akka.testkit.TestKit
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.dispatch.Dispatchers
+import org.apache.pekko.event.Logging
+import org.apache.pekko.event.LoggingAdapter
+import org.apache.pekko.testkit.DeadLettersFilter
+import org.apache.pekko.testkit.TestEvent.Mute
+import org.apache.pekko.testkit.TestKit
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import org.scalactic.CanEqual
@@ -24,12 +24,12 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-object AkkaSpec {
+object PekkoSpec {
   val testConf: Config = ConfigFactory.parseString("""
-      akka {
+      pekko {
         use-slf4j = false # This is needed to avoid overriding below conf `loggers`
-                          #  with `["akka.event.slf4j.Slf4jLogger"]` when importing `akka-persistence-testkit`
-        loggers = ["akka.testkit.TestEventListener"]
+                          #  with `["org.apache.pekko.event.slf4j.Slf4jLogger"]` when importing `pekko-persistence-testkit`
+        loggers = ["org.apache.pekko.testkit.TestEventListener"]
         loglevel = "WARNING"
         stdout-loglevel = "WARNING"
         actor {
@@ -93,7 +93,7 @@ object AkkaSpec {
 
 }
 
-abstract class AkkaSpec(_system: ActorSystem)
+abstract class PekkoSpec(_system: ActorSystem)
     extends TestKit(_system)
     with AnyWordSpecLike
     with Matchers
@@ -104,14 +104,14 @@ abstract class AkkaSpec(_system: ActorSystem)
 
   def this(config: Config) = this(
     ActorSystem(
-      AkkaSpec.testNameFromCallStack(classOf[AkkaSpec]),
-      ConfigFactory.load(config.withFallback(AkkaSpec.testConf))))
+      PekkoSpec.testNameFromCallStack(classOf[PekkoSpec]),
+      ConfigFactory.load(config.withFallback(PekkoSpec.testConf))))
 
   def this(s: String) = this(ConfigFactory.parseString(s))
 
-  def this(configMap: Map[String, _]) = this(AkkaSpec.mapToConfig(configMap))
+  def this(configMap: Map[String, _]) = this(PekkoSpec.mapToConfig(configMap))
 
-  def this() = this(ActorSystem(AkkaSpec.testNameFromCallStack(classOf[AkkaSpec]), AkkaSpec.testConf))
+  def this() = this(ActorSystem(PekkoSpec.testNameFromCallStack(classOf[PekkoSpec]), PekkoSpec.testConf))
 
   val log: LoggingAdapter = Logging(system, Logging.simpleName(this))
 
