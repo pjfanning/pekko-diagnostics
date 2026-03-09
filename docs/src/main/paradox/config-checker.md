@@ -13,19 +13,18 @@ seen in mailing lists and customer consulting.
 
 The advice the tool can give is of course of general character and there will always be
 cases where it is wrong and the given configuration is appropriate for the specific
-system. Do not hesitate to use [Lightbend Support](http://support.lightbend.com/) if
-you need more advice or discussion.
+system.
 
 As a general rule; use default values until you have a problem or are sure that the
 adjustment is needed.
 
 ## Using the Configuration Checker
 
-To use the Configuration Checker feature a dependency on the *akka-diagnostics* artifact must be added.
+To use the Configuration Checker feature a dependency on the *pekko-diagnostics* artifact must be added.
 
 @@dependency [Maven,sbt,Gradle] {
 group=com.lightbend.akka
-artifact=akka-diagnostics_$scala.binary.version$
+artifact=pekko-diagnostics_$scala.binary.version$
 version=$project.version$
 }
 
@@ -77,7 +76,7 @@ about the system or potentially be used for a DoS attack.
 An annoying mistake is to use wrong spelling for a setting or place it in the wrong
 section so that it is not used. For example:
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #typo }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #typo }
 
 That would result in these warnings:
 
@@ -124,7 +123,7 @@ improvement.
 
 Example:
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #power-user }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #power-user }
 
 The warning would look like:
 
@@ -150,7 +149,7 @@ that should be avoided. The checker will detect the following potential dispatch
 
 ### Default dispatcher
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #default-dispatcher-size-large }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #default-dispatcher-size-large }
 
 ```
 Don't use too large pool size [512] for the default-dispatcher. Note that the pool size is calculated by ceil(available processors * parallelism-factor), and then bounded by the parallelism-min and parallelism-max values. This machine has [8] available processors. If you use a large pool size here because of blocking execution you should instead use a dedicated dispatcher to manage blocking tasks/actors. Blocking execution shouldn't run on the default-dispatcher because that may starve system internal tasks. Related config properties: [akka.actor.default-dispatcher]. You may disable this check by adding [default-dispatcher-size] to configuration string list akka.diagnostics.checker.disabled-checks.
@@ -164,7 +163,7 @@ There are a few more checks for the default dispatcher:
 
 ### Throughput settings
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #dispatcher-throughput }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #dispatcher-throughput }
 
 ```
 Use throughput-deadline-time when dispatcher is configured with high throughput [200] batching to avoid unfair processing. Related config properties: [my-dispatcher.throughput = 200, my-dispatcher.throughput-deadline-time]. You may disable this check by adding [dispatcher-throughput] to configuration string list akka.diagnostics.checker.disabled-checks.
@@ -184,7 +183,7 @@ You have a total of [1000] threads in all configured dispatchers. That many thre
 
 ### Fork join pool size
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #fork-join-large }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #fork-join-large }
 
 ```
 Don't use too large pool size [100] for fork-join pool. Note that the pool size is calculated by ceil(available processors * parallelism-factor), and then bounded by the parallelism-min and parallelism-max values. This machine has [8] available processors. If you use a large pool size here because of blocking execution you should use a thread-pool-executor instead. Related config properties: [my-fjp]. You may disable this check by adding [fork-join-pool-size] to configuration string list akka.diagnostics.checker.disabled-checks.
@@ -192,7 +191,7 @@ Don't use too large pool size [100] for fork-join pool. Note that the pool size 
 
 ### Internal dispatcher size
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #internal-dispatcher-large }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #internal-dispatcher-large }
 
 ```
 Don't use too large pool size [512] for the internal-dispatcher. Note that the pool size is calculated by ceil(available processors * parallelism-factor), and then bounded by the parallelism-min and parallelism-max values. This machine has [12] available processors. If you use a large pool size here because of blocking execution you should instead use a dedicated dispatcher to manage blocking tasks/actors. Blocking execution shouldn't run on the internal-dispatcher because that may starve other tasks. Related config properties: [akka.actor.internal-dispatcher]. You may disable this check by adding [internal-dispatcher-size] to configuration string list akka.diagnostics.checker.disabled-checks.
@@ -214,7 +213,7 @@ that it can communicate with it again, i.e. unreachable is not a fatal condition
 You may want quick failure detection to avoid sending messages to the void, but too short
 timeouts will result in too many false failure detections caused by for example GC pauses.
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #cluster-fd-short }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #cluster-fd-short }
 
 ```
 Cluster failure detector acceptable-heartbeat-pause of [1000 ms] is probably too short to be meaningful. It may cause marking nodes unreachable and then back to reachable because of false failure detection caused by for example GC pauses. Related config properties: [akka.cluster.failure-detector.acceptable-heartbeat-pause = 1s]. Corresponding default values: [akka.cluster.failure-detector.acceptable-heartbeat-pause = 3 s]. You may disable this check by adding [cluster-failure-detector] to configuration string list akka.diagnostics.checker.disabled-checks.
@@ -224,7 +223,7 @@ You should normally not change the default `heartbeat-interval`, but if you do y
 maintain a good ratio between the `acceptable-heartbeat-pause` and the `heartbeat-interval`,
 i.e. allow for a few "lost" heartbeats.
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #cluster-fd-ratio }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #cluster-fd-ratio }
 
 ```
 Cluster failure detector ratio [2] between acceptable-heartbeat-pause and heartbeat-interval is too small, decrease the heartbeat-interval and/or increase acceptable-heartbeat-pause. Otherwise it may trigger false failure detection and resulting in quarantining of remote system. Related config properties: [akka.cluster.failure-detector.acceptable-heartbeat-pause = 6s, akka.cluster.failure-detector.heartbeat-interval = 3s]. Corresponding default values: [akka.cluster.failure-detector.acceptable-heartbeat-pause = 3 s, akka.cluster.failure-detector.heartbeat-interval = 1 s]. You may disable this check by adding [cluster-failure-detector] to configuration string list akka.diagnostics.checker.disabled-checks.
@@ -252,7 +251,7 @@ condition and one of the nodes must be restarted before they can communicate aga
 a major difference to the Cluster failure detector. Therefore it is important to avoid false failure
 detections because of for example long GC pauses.
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #remote-watch-fd-short }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #remote-watch-fd-short }
 
 ```
 Remote watch failure detector acceptable-heartbeat-pause of [3000 ms] is probably too short to be meaningful. It may cause quarantining of remote system because of false failure detection caused by for example GC pauses. Related config properties: [akka.remote.watch-failure-detector.acceptable-heartbeat-pause = 3s]. Corresponding default values: [akka.remote.watch-failure-detector.acceptable-heartbeat-pause = 10 s]. You may disable this check by adding [remote-watch-failure-detector] to configuration string list akka.diagnostics.checker.disabled-checks.
@@ -382,15 +381,15 @@ Use throughput-deadline-time when dispatcher is configured with high throughput 
 
 To disable this recommendation and thereby suppress the log message:
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #disabled-checks }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #disabled-checks }
 
 It is also possible to disable all checks with:
 
-@@snip [ConfigCheckerSpec.scala](/akka-diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #disabled }
+@@snip [ConfigCheckerSpec.scala](/diagnostics/src/test/scala/akka/diagnostics/ConfigCheckerSpec.scala) { #disabled }
 
 ## Configuration
 
 Below is the configuration of the checker itself, which you may amend to adjust its behavior
 or suppress certain warnings.
 
-@@snip [reference.conf](/akka-diagnostics/src/main/resources/reference.conf) { #config-checker }
+@@snip [reference.conf](/diagnostics/src/main/resources/reference.conf) { #config-checker }

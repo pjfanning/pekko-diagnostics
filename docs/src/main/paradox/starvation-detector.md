@@ -16,15 +16,15 @@ dispatcher are busy with.
 
 ## Project Info
 
-@@project-info{ projectId="akka-diagnostics" }
+@@project-info{ projectId="pekko-diagnostics" }
 
 ## Using the Starvation Detector
 
-To use the Starvation Detector feature a dependency on the *akka-diagnostics* artifact must be added.
+To use the Starvation Detector feature a dependency on the *pekko-diagnostics* artifact must be added.
 
 @@dependency [Maven,sbt,Gradle] {
   group=com.lightbend.akka
-  artifact=akka-diagnostics_$scala.binary.version$
+  artifact=pekko-diagnostics_$scala.binary.version$
   version=$project.version$
 }
 
@@ -44,7 +44,7 @@ is not an Akka Dispatcher).
 
 You can customize settings of the starvation detector to prevent spurious logging depending on your application logic.
 
-@@snip [reference.conf](/akka-diagnostics/src/main/resources/reference.conf) { #starvation-detector}
+@@snip [reference.conf](/diagnostics/src/main/resources/reference.conf) { #starvation-detector}
 
 By default, the starvation detector runs seldom enough not to cause any performance hit itself. Thread starvation issues usually affect
 systems for longer time spans, so the starvation detector is still likely to experience and warn even when it runs only infrequently.

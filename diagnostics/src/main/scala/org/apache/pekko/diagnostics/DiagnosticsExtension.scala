@@ -13,7 +13,7 @@ import org.apache.pekko.actor.ExtensionIdProvider
 
 /**
  * The diagnostics extension enables the [[StarvationDetector]] and reports configuration issues with [[ConfigChecker]]
- * for an `ActorSystem`. This extension is automatically activated when the `akka-diagnostics` dependency is included.
+ * for an `ActorSystem`. This extension is automatically activated when the `pekko-diagnostics` dependency is included.
  */
 object DiagnosticsExtension extends ExtensionId[DiagnosticsExtension] with ExtensionIdProvider {
   override def get(system: ActorSystem): DiagnosticsExtension = super.get(system)

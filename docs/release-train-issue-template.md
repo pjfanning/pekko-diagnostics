@@ -11,25 +11,25 @@ Variables to be expanded in this template:
 - $VERSION$=???
 
 Key links:
-  - akka/akka-diagnostics milestone: https://github.com/akka/akka-diagnostics/milestone/?
+  - akka/akka-diagnostics milestone: https://github.com/akka/diagnostics/milestone/?
 -->
 
 ### Cutting the release
 
 - [ ] Check that open PRs and issues assigned to the milestone are reasonable
 - [ ] For minor or major versions, update the Change date in the LICENSE file and update the `licenses` url in the build.
-- [ ] Create a new milestone for the [next version](https://github.com/akka/akka-diagnostics/milestones)
-- [ ] Close the [$VERSION$ milestone](https://github.com/akka/akka-diagnostics/milestones?direction=asc&sort=due_date)
+- [ ] Create a new milestone for the [next version](https://github.com/akka/diagnostics/milestones)
+- [ ] Close the [$VERSION$ milestone](https://github.com/akka/diagnostics/milestones?direction=asc&sort=due_date)
 - [ ] Make sure all important PRs have been merged
 - [ ] Update the revision in Fossa in the Akka Group for the Akka umbrella version, e.g. `22.10`. Note that the revisions for the release is udpated by Akka Group > Projects > Edit. For recent dependency updates the Fossa validation can be triggered from the GitHub actions "Dependency License Scanning".
-- [ ] Wait until [main build finished](https://github.com/akka/akka-diagnostics/actions) after merging the latest PR
-- [ ] Update the [draft release](https://github.com/akka/akka-diagnostics/releases) with the next tag version `v$VERSION$`, title and release description. Use the `Publish release` button, which will create the tag.
-- [ ] Check that GitHub Actions release build has executed successfully (GitHub Actions will start a [CI build](https://github.com/akka/akka-diagnostics/actions) for the new tag and publish artifacts to Maven central via Sonatype)
+- [ ] Wait until [main build finished](https://github.com/akka/diagnostics/actions) after merging the latest PR
+- [ ] Update the [draft release](https://github.com/akka/diagnostics/releases) with the next tag version `v$VERSION$`, title and release description. Use the `Publish release` button, which will create the tag.
+- [ ] Check that GitHub Actions release build has executed successfully (GitHub Actions will start a [CI build](https://github.com/akka/diagnostics/actions) for the new tag and publish artifacts to Maven central via Sonatype)
 
 ### Check availability
 
-- [ ] Check [API](https://doc.akka.io/api/akka-diagnostics/$VERSION$/) documentation
-- [ ] Check [reference](https://doc.akka.io/docs/akka-diagnostics/$VERSION$/) documentation. Check that the reference docs were deployed and show a version warning (see section below on how to fix the version warning).
+- [ ] Check [API](https://doc.akka.io/api/diagnostics/$VERSION$/) documentation
+- [ ] Check [reference](https://doc.akka.io/docs/diagnostics/$VERSION$/) documentation. Check that the reference docs were deployed and show a version warning (see section below on how to fix the version warning).
 - [ ] Check the release on [Maven central](https://repo1.maven.org/maven2/com/lightbend/akka/akka-diagnostics_2.13/$VERSION$/)
 
 ### When everything is on maven central
@@ -39,8 +39,8 @@ Key links:
          ```
          cd ~/www
          git status
-         git add docs/akka-diagnostics/current docs/akka-diagnostics/$VERSION$
-         git add api/akka-diagnostics/current api/akka-diagnostics/$VERSION$
+         git add docs/diagnostics/current docs/diagnostics/$VERSION$
+         git add api/diagnostics/current api/diagnostics/$VERSION$
          git commit -m "Akka Diagnostics R2DBC $VERSION$"
          ```
 
