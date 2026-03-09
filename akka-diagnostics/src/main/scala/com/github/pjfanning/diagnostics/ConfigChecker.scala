@@ -59,7 +59,7 @@ object ConfigChecker {
   def main(args: Array[String]): Unit = {
 
     val config = ConfigFactory
-      .parseString"pekko.diagnostics.checker.fail-on-warning = on")
+      .parseString("pekko.diagnostics.checker.fail-on-warning = on")
       .withFallback(ConfigFactory.load())
 
     Try(ActorSystem("ConfigChecker", config)) match {
@@ -101,7 +101,7 @@ object ConfigChecker {
       case LogWarnings =>
         val asyncCheckAfter =
           provider.classicSystem.settings.config
-            .getDuration"pekko.diagnostics.checker.async-check-after", MILLISECONDS)
+            .getDuration("pekko.diagnostics.checker.async-check-after", MILLISECONDS)
             .millis
         if (asyncCheckAfter > Duration.Zero)
           provider.classicSystem.scheduler.scheduleOnce(asyncCheckAfter)(runChecks())(provider.classicSystem.dispatcher)
@@ -134,8 +134,8 @@ object ConfigChecker {
    */
   private object Internal {
     def mode(config: Config): Mode =
-      if (config.getBoolean"pekko.diagnostics.checker.enabled")) {
-        if (config.getBoolean"pekko.diagnostics.checker.fail-on-warning")) FailOnWarnings
+      if (config.getBoolean("pekko.diagnostics.checker.enabled")) {
+        if (config.getBoolean("pekko.diagnostics.checker.fail-on-warning")) FailOnWarnings
         else LogWarnings
       } else Disabled
 
@@ -179,14 +179,14 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     this(system, system.settings.config, ConfigFactory.defaultReference(system.dynamicAccess.classLoader))
 
   private val disabledChecks: Set[String] =
-    config.getStringList"pekko.diagnostics.checker.disabled-checks").asScala.toSet
+    config.getStringList("pekko.diagnostics.checker.disabled-checks").asScala.toSet
 
   private val confirmedPowerUserSettings: Set[String] =
-    config.getStringList"pekko.diagnostics.checker.confirmed-power-user-settings").asScala.toSet
+    config.getStringList("pekko.diagnostics.checker.confirmed-power-user-settings").asScala.toSet
   private[diagnostics] val (powerUserSettings: Set[String], powerUserWildcardSettings: Set[String]) = {
     val fullList =
       config
-        .getStringList"pekko.diagnostics.checker.power-user-settings")
+        .getStringList("pekko.diagnostics.checker.power-user-settings")
         .asScala
         .toSet
         .diff(confirmedPowerUserSettings)
@@ -198,10 +198,10 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private val disabledTypoSections: Set[String] = {
     config
-      .getStringList"pekko.diagnostics.checker.disabled-typo-sections")
+      .getStringList("pekko.diagnostics.checker.disabled-typo-sections")
       .asScala
       .toSet
-      .union(config.getStringList"pekko.diagnostics.checker.confirmed-typos").asScala.toSet)
+      .union(config.getStringList("pekko.diagnostics.checker.confirmed-typos").asScala.toSet)
   }
 
   private val defaultDispatcherPath = "pekko.actor.default-dispatcher"
@@ -210,7 +210,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   private val knownDispatcherTypes = Set("PinnedDispatcher", "Dispatcher")
   private val knownExecutorTypes =
     Set("default-executor", "fork-join-executor", "thread-pool-executor", "affinity-pool-executor")
-  private val knownDispatcherPrefixes = Set"pekko.", "lagom.", "play.", "cassandra-plugin-", "kafka.")
+  private val knownDispatcherPrefixes = Set("pekko.", "lagom.", "play.", "cassandra-plugin-", "kafka.")
 
   private val knownSettings = {
     import scala.collection.JavaConverters._
@@ -302,8 +302,10 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
       // Using java.util.LinkedList because we use ConfigUtil to join these path elements.
       val pathList = new java.util.LinkedList[String]
 
-      val deploymentReference = reference.getConfig"pekko.actor.deployment.default")
-      lazy val grpcClientReference = if (reference.hasPath("""pekko.grpc.client."*"""")) reference.getConfig("""pekko.grpc.client."*"""") else reference
+      val deploymentReference = reference.getConfig("pekko.actor.deployment.default")
+      lazy val grpcClientReference =
+        if (reference.hasPath("""pekko.grpc.client."*"""")) reference.getConfig("""pekko.grpc.client."*"""")
+        else reference
 
       def inDeploymentSection: Boolean =
         pathList.size > 4 && pathList.asScala.startsWith(Seq("pekko", "actor", "deployment"))
@@ -435,7 +437,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
       val cfgWithFallback = cfg.withFallback(system.dispatchers.defaultDispatcherConfig)
       Try { w ++= checkDispatcherThroughput(path, cfgWithFallback) }
       Try { w ++= checkForkJoinPoolSize(path, cfgWithFallback) }
-      if (!path.startsWith"pekko."))
+      if (!path.startsWith("pekko."))
         w ++= checkTypoInDispatcherSection(path, cfg)
     }
     w
@@ -681,7 +683,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     val provider = config.getString("pekko.actor.provider")
     // check existence of a property from reference.conf that will unlikely be defined elsewhere
     reference.hasPath("pekko.actor.serializers.daemon-create") &&
-    (provider == "remote" || provider == "pekko.remote.RemoteActorRefProvider" || isClusterConfigAvailable)
+    (provider == "remote" || provider == "org.apache.pekko.remote.RemoteActorRefProvider" || isClusterConfigAvailable)
   }
 
   private def checkRemote(): Vector[ConfigWarning] =
@@ -805,10 +807,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     ifEnabled("remote-artery-disabled") { checkerKey =>
       val path = "pekko.remote.artery.enabled"
       if (!config.getBoolean(path)) {
-        warn(
-          checkerKey,
-          path,
-          "Classic remoting is not supported in Pekko. Use Artery instead.")
+        warn(checkerKey, path, "Classic remoting is not supported in Pekko. Use Artery instead.")
       } else Nil
     }
 
@@ -844,7 +843,8 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   private def checkPreferClusterToRemote(): List[ConfigWarning] =
     ifEnabled("remote-prefer-cluster") { checkerKey =>
       val path = "pekko.actor.provider"
-      if (config.getString(path) == "remote" || config.getString(path) == "pekko.remote.RemoteActorRefProvider")
+      if (config.getString(path) == "remote" || config.getString(
+          path) == "org.apache.pekko.remote.RemoteActorRefProvider")
         warn(
           checkerKey,
           path,
@@ -900,7 +900,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     val provider = config.getString("pekko.actor.provider")
     // check existence of a property from reference.conf that will unlikely be defined elsewhere
     reference.hasPath("pekko.actor.serializers.pekko-cluster") &&
-    (provider == "cluster" || provider == "pekko.cluster.ClusterActorRefProvider")
+    (provider == "cluster" || provider == "org.apache.pekko.cluster.ClusterActorRefProvider")
   }
 
   private def checkCluster(): Vector[ConfigWarning] =

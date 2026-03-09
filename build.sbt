@@ -1,5 +1,3 @@
-import AutomaticModuleName
-
 GlobalScope / parallelExecution := false
 Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
 
@@ -13,7 +11,9 @@ inThisBuild(
     organizationName := "pjfanning",
     homepage := Some(url("https://github.com/pjfanning/pekko-diagnostics")),
     scmInfo := Some(
-      ScmInfo(url("https://github.com/pjfanning/pekko-diagnostics"), "https://github.com/pjfanning/pekko-diagnostics.git")),
+      ScmInfo(
+        url("https://github.com/pjfanning/pekko-diagnostics"),
+        "https://github.com/pjfanning/pekko-diagnostics.git")),
     startYear := Some(2022),
     developers += Developer(
       "contributors",

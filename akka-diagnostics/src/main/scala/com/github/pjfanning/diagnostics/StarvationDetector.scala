@@ -11,7 +11,7 @@ import org.apache.pekko.actor.ClassicActorSystemProvider
 import org.apache.pekko.annotation.InternalApi
 import org.apache.pekko.dispatch.Dispatcher
 import org.apache.pekko.dispatch.ExecutorServiceDelegate
-import org.apache.pekko.dispatch.ForkJoinExecutorConfigurator.AkkaForkJoinPool
+import org.apache.pekko.dispatch.ForkJoinExecutorConfigurator.PekkoForkJoinPool
 import org.apache.pekko.dispatch.MonitorableThreadFactory
 import org.apache.pekko.event.Logging
 import org.apache.pekko.event.LoggingAdapter
@@ -369,7 +369,7 @@ object StarvationDetector {
           s"Failed to extract thread prefix, unsupported executor service type [${es.getClass.toString}], starvation will not be detected for this dispatcher.")
     }
     private def threadNamePrefix(es: ExecutorService): Option[String] = es match {
-      case ak: AkkaForkJoinPool    => Some(getAkkaFJPFactory(ak).name)
+      case ak: PekkoForkJoinPool   => Some(getAkkaFJPFactory(ak).name)
       case tpe: ThreadPoolExecutor => Some(getThreadPoolExecutorFactory(tpe).name)
       case ap: AffinityPool        => Some(getAffinityPoolFactory(ap).name)
       case _                       => None
@@ -506,8 +506,8 @@ object StarvationDetector {
 
     d => m.invoke(d).asInstanceOf[ExecutorServiceDelegate]
   }
-  private lazy val getAkkaFJPFactory: AkkaForkJoinPool => MonitorableThreadFactory = {
-    val f = classOf[AkkaForkJoinPool].getSuperclass.getDeclaredField("factory")
+  private lazy val getAkkaFJPFactory: PekkoForkJoinPool => MonitorableThreadFactory = {
+    val f = classOf[PekkoForkJoinPool].getSuperclass.getDeclaredField("factory")
     f.setAccessible(true)
 
     fjp => f.get(fjp).asInstanceOf[MonitorableThreadFactory]
