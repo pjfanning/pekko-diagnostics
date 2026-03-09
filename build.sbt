@@ -94,7 +94,7 @@ lazy val root = (project in file("."))
 lazy val `akka-diagnostics` = (project in file("akka-diagnostics"))
   .settings(common)
   .settings(libraryDependencies ++= Dependencies.pekkoDiagnostics)
-  .settings(AutomaticModuleName.settings("com.github.pjfanning.pekko.diagnostics"))
+  .settings(AutomaticModuleName.settings("org.apache.pekko.diagnostics"))
 
 lazy val docs = (project in file("docs"))
   .enablePlugins(AkkaParadoxPlugin, ParadoxSitePlugin, PreprocessPlugin, PublishRsyncPlugin)
@@ -124,8 +124,8 @@ lazy val docs = (project in file("docs"))
       "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/${Dependencies.PekkoHttpVersionInDocs}/%s",
       "scaladoc.pekko.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/${Dependencies.PekkoHttpVersionInDocs}/",
       "snip.github_link" -> "false"),
-    ApidocPlugin.autoImport.apidocRootPackage := "com.github.pjfanning.pekko",
-    apidocRootPackage := "com.github.pjfanning.pekko",
+    ApidocPlugin.autoImport.apidocRootPackage := "org.apache.pekko",
+    apidocRootPackage := "org.apache.pekko",
     resolvers += Resolver.jcenterRepo, // required to resolve paradox-theme-akka
     publishRsyncArtifacts += makeSite.value -> "www/",
     publishRsyncHost := "akkarepo@gustav.akka.io")

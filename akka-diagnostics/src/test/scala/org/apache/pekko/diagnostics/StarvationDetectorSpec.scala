@@ -2,7 +2,7 @@
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.github.pjfanning.pekko.diagnostics
+package org.apache.pekko.diagnostics
 
 import java.io.File
 import java.io.FileOutputStream
@@ -20,7 +20,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Try
 
-import com.github.pjfanning.pekko.diagnostics.StarvationDetector.StarvationDetectorThread
+import org.apache.pekko.diagnostics.StarvationDetector.StarvationDetectorThread
 import org.apache.pekko.dispatch.Dispatchers
 import org.apache.pekko.dispatch.ExecutionContexts
 import org.apache.pekko.event.Logging
@@ -67,7 +67,7 @@ class StarvationDetectorSpec extends PekkoSpec(s"""
         }
       }
     """) {
-  import com.github.pjfanning.pekko.diagnostics.StarvationDetectorSpec._
+  import org.apache.pekko.diagnostics.StarvationDetectorSpec._
 
   "The StarvationDetector" should {
     def testsExecutor(dispatcherId: String): Unit = s"support $dispatcherId" should {

@@ -2,7 +2,7 @@
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package com.github.pjfanning.pekko.diagnostics
+package org.apache.pekko.diagnostics
 
 import java.lang.reflect.Modifier
 
