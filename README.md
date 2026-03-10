@@ -12,7 +12,7 @@ The Pekko Config Checker tries to help you by finding potential configuration is
 
 ## Project status
 
-This library is under development.
+This library is under development. This is a fork of Akka Diagnostics 2.0.0 which became Apache licensed in March 2026.
 
 ## License
 
