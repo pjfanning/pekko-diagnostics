@@ -2,18 +2,18 @@
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package akka.diagnostics
+package org.apache.pekko.diagnostics
 
-import akka.actor.ActorSystem
-import akka.actor.ClassicActorSystemProvider
-import akka.actor.ExtendedActorSystem
-import akka.actor.Extension
-import akka.actor.ExtensionId
-import akka.actor.ExtensionIdProvider
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.actor.ClassicActorSystemProvider
+import org.apache.pekko.actor.ExtendedActorSystem
+import org.apache.pekko.actor.Extension
+import org.apache.pekko.actor.ExtensionId
+import org.apache.pekko.actor.ExtensionIdProvider
 
 /**
  * The diagnostics extension enables the [[StarvationDetector]] and reports configuration issues with [[ConfigChecker]]
- * for an `ActorSystem`. This extension is automatically activated when the `akka-diagnostics` dependency is included.
+ * for an `ActorSystem`. This extension is automatically activated when the `pekko-diagnostics` dependency is included.
  */
 object DiagnosticsExtension extends ExtensionId[DiagnosticsExtension] with ExtensionIdProvider {
   override def get(system: ActorSystem): DiagnosticsExtension = super.get(system)

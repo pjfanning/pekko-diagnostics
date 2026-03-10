@@ -2,22 +2,23 @@
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package akka.diagnostics
+package org.apache.pekko.diagnostics
 
 import java.util.concurrent.ConcurrentHashMap
 
-import akka.dispatch.affinity.AffinityPool
-import akka.actor.ClassicActorSystemProvider
-import akka.annotation.InternalApi
-import akka.dispatch.Dispatcher
-import akka.dispatch.ExecutorServiceDelegate
-import akka.dispatch.ForkJoinExecutorConfigurator.AkkaForkJoinPool
-import akka.dispatch.MonitorableThreadFactory
-import akka.event.Logging
-import akka.event.LoggingAdapter
+import org.apache.pekko.dispatch.affinity.AffinityPool
+import org.apache.pekko.actor.ClassicActorSystemProvider
+import org.apache.pekko.annotation.InternalApi
+import org.apache.pekko.dispatch.Dispatcher
+import org.apache.pekko.dispatch.ExecutorServiceDelegate
+import org.apache.pekko.dispatch.ForkJoinExecutorConfigurator.PekkoForkJoinPool
+import org.apache.pekko.dispatch.MonitorableThreadFactory
+import org.apache.pekko.event.Logging
+import org.apache.pekko.event.LoggingAdapter
 import com.typesafe.config.Config
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -136,17 +137,17 @@ object StarvationDetector {
 
   /**
    * Creates and runs a StarvationDetector thread for the dispatcher of the system's main dispatcher, i.e.
-   * akka.actor.default-dispatcher.
+   * pekko.actor.default-dispatcher.
    */
   def checkSystemDispatcher(provider: ClassicActorSystemProvider): Unit =
     checkSystemDispatcher(
       provider,
       StarvationDetectorSettings.fromConfig(
-        provider.classicSystem.settings.config.getConfig("akka.diagnostics.starvation-detector")))
+        provider.classicSystem.settings.config.getConfig("pekko.diagnostics.starvation-detector")))
 
   /**
    * Creates and runs a StarvationDetector thread for the dispatcher of the system's main dispatcher, i.e.
-   * akka.actor.default-dispatcher, with custom configuration.
+   * pekko.actor.default-dispatcher, with custom configuration.
    */
   def checkSystemDispatcher(provider: ClassicActorSystemProvider, config: StarvationDetectorSettings): Unit = {
     val system = provider.classicSystem
@@ -158,23 +159,23 @@ object StarvationDetector {
   }
 
   /**
-   * Creates and runs a StarvationDetector thread for the internal dispatcher of the system. Akka 2.6 introduced this
+   * Creates and runs a StarvationDetector thread for the internal dispatcher of the system. Pekko introduced this
    * dispatcher for internal tasks like clustering. If there is no internal dispatcher, does nothing.
    */
   def checkInternalDispatcher(provider: ClassicActorSystemProvider): Unit =
     checkInternalDispatcher(
       provider,
       StarvationDetectorSettings.fromConfig(
-        provider.classicSystem.settings.config.getConfig("akka.diagnostics.starvation-detector")))
+        provider.classicSystem.settings.config.getConfig("pekko.diagnostics.starvation-detector")))
 
   /**
    * Creates and runs a StarvationDetector thread for the internal dispatcher of the system with custom configuration.
-   * Akka 2.6 introduced this dispatcher for internal tasks like clustering. If there is no internal dispatcher, does
+   * Pekko introduced this dispatcher for internal tasks like clustering. If there is no internal dispatcher, does
    * nothing.
    */
   def checkInternalDispatcher(provider: ClassicActorSystemProvider, config: StarvationDetectorSettings): Unit = {
     val system = provider.classicSystem
-    val internalDispatcherPath = "akka.actor.internal-dispatcher"
+    val internalDispatcherPath = "pekko.actor.internal-dispatcher"
     val dispatcher = system.dispatchers.lookup(internalDispatcherPath)
     checkExecutionContext(
       dispatcher,
@@ -185,7 +186,7 @@ object StarvationDetector {
 
   /**
    * Creates and runs a StarvationDetector thread for the given ExecutionContext. Thread analytics are currently only
-   * available for Akka dispatchers.
+   * available for Pekko dispatchers.
    *
    * You need to provide a `hasTerminated` function that will be used to figure out if the execution context has shut
    * down to shutdown the starvation detector thread.
@@ -213,7 +214,7 @@ object StarvationDetector {
    * JAVA API
    *
    * Creates and runs a StarvationDetector thread for the given ExecutionContext. Thread analytics are currently only
-   * available for Akka dispatchers.
+   * available for Pekko dispatchers.
    *
    * You need to provide a `hasTerminated` function that will be used to figure out if the execution context has shut
    * down to shutdown the starvation detector thread.
@@ -231,7 +232,7 @@ object StarvationDetector {
    * INTERNAL API
    */
   @InternalApi
-  private[akka] class StarvationDetectorThread(
+  private[diagnostics] class StarvationDetectorThread(
       ec: ExecutionContext,
       log: LoggingAdapter,
       config: StarvationDetectorSettings,
@@ -306,7 +307,7 @@ object StarvationDetector {
 
         if (initialDelay > Duration.Zero) {
           log.info(
-            s"Starvation detector will start after `akka.diagnostics.starvation-detector.initial-delay = $initialDelay`")
+            s"Starvation detector will start after `pekko.diagnostics.starvation-detector.initial-delay = $initialDelay`")
           LockSupport.parkNanos(initialDelay.toNanos)
         }
         log.info(s"Starvation detector starting for dispatcher [$ec]")
@@ -315,13 +316,13 @@ object StarvationDetector {
           catch {
             case e: InaccessibleObjectException =>
               log.warning(s"Stopping Starvation detector. Reason: ${e.getMessage}. \n" +
-              s"Probably you are missing some JVM parameters. See 'note' in https://doc.akka.io/docs/akka-diagnostics/current/starvation-detector.html#configuration")
+              s"Probably you are missing some JVM parameters. See 'note' in https://github.com/pjfanning/pekko-diagnostics/blob/main/docs/src/main/paradox/starvation-detector.md")
               return
             case NonFatal(ex) =>
               log.error(
                 ex,
                 "Starvation detector failed and terminated. This is likely a bug. " +
-                "Please report to https://github.com/akka/akka-diagnostics/issues")
+                "Please report to https://github.com/pjfanning/pekko-diagnostics/issues")
               return
           }
           // Add +/- 5% of jitter. In tests, we observed accidental synchronization of starvation detector execution
@@ -369,17 +370,19 @@ object StarvationDetector {
           s"Failed to extract thread prefix, unsupported executor service type [${es.getClass.toString}], starvation will not be detected for this dispatcher.")
     }
     private def threadNamePrefix(es: ExecutorService): Option[String] = es match {
-      case ak: AkkaForkJoinPool    => Some(getAkkaFJPFactory(ak).name)
+      case fjp: PekkoForkJoinPool  => Some(getPekkoFJPFactory(fjp).name)
       case tpe: ThreadPoolExecutor => Some(getThreadPoolExecutorFactory(tpe).name)
       case ap: AffinityPool        => Some(getAffinityPoolFactory(ap).name)
-      case _                       => None
+      case fjp: ForkJoinPool if fjp.getFactory.getClass.getName.startsWith("org.apache.pekko.dispatch") =>
+        Some(getPekkoFJPFactory(fjp).name)
+      case _ => None
     }
     private def isSleepingFJThread(trace: StackTrace): Boolean =
       trace.length >= 2 &&
       trace
         .take(5)
         .exists(t =>
-          Problem.classMethod("akka.dispatch.forkjoin.ForkJoinPool.scan")(t) ||
+          Problem.classMethod("org.apache.pekko.dispatch.forkjoin.ForkJoinPool.scan")(t) ||
           Problem.classMethod("java.util.concurrent.ForkJoinPool.scan")(t))
 
     private def topStacks(threadStacks: Seq[ThreadStatus]): String = {
@@ -417,7 +420,7 @@ object StarvationDetector {
         val omittedGroups =
           if (traceGroups.size > toTake)
             s"traces for ${traceGroups.drop(toTake).map(_._2.size).sum} threads were omitted. Increase " +
-            s"`akka.diagnostics.starvation-detector.thread-traces-limit` to show more stack traces, "
+            s"`pekko.diagnostics.starvation-detector.thread-traces-limit` to show more stack traces, "
           else ""
 
         traceGroups
@@ -461,7 +464,7 @@ object StarvationDetector {
     val WellKnownProblems: Seq[Problem] = Seq(
       Problem(
         "Thread.sleep",
-        "Thread.sleep blocks a thread. Use system.scheduler.scheduleOnce or akka.pattern.after to continue processing asynchronously after a delay.",
+        "Thread.sleep blocks a thread. Use system.scheduler.scheduleOnce or org.apache.pekko.pattern.after to continue processing asynchronously after a delay.",
         None,
         topFrameIs(classMethod("java.lang.Thread.sleep"))),
       Problem(
@@ -476,7 +479,7 @@ object StarvationDetector {
         anyFrameIs(classMethod("java.util.concurrent.CompletableFuture.get"))),
       Problem(
         "java.net",
-        "java.net API is synchronous and blocks a thread. Use an asynchronous network API instead like Akka TCP, Akka Stream TCP, or java.nio.channels.SocketChannel.",
+        "java.net API is synchronous and blocks a thread. Use an asynchronous network API instead like Pekko TCP, Pekko Stream TCP, or java.nio.channels.SocketChannel.",
         None,
         anyFrameIs(classStartsWith("java.net"))),
       Problem(
@@ -506,8 +509,8 @@ object StarvationDetector {
 
     d => m.invoke(d).asInstanceOf[ExecutorServiceDelegate]
   }
-  private lazy val getAkkaFJPFactory: AkkaForkJoinPool => MonitorableThreadFactory = {
-    val f = classOf[AkkaForkJoinPool].getSuperclass.getDeclaredField("factory")
+  private lazy val getPekkoFJPFactory: ForkJoinPool => MonitorableThreadFactory = {
+    val f = classOf[PekkoForkJoinPool].getSuperclass.getDeclaredField("factory")
     f.setAccessible(true)
 
     fjp => f.get(fjp).asInstanceOf[MonitorableThreadFactory]
@@ -521,7 +524,7 @@ object StarvationDetector {
 
   private lazy val getAffinityPoolFactory: AffinityPool => MonitorableThreadFactory = {
     val threadFactoryField =
-      classOf[AffinityPool].getDeclaredField("akka$dispatch$affinity$AffinityPool$$threadFactory")
+      classOf[AffinityPool].getDeclaredField("org$apache$pekko$dispatch$affinity$AffinityPool$$threadFactory")
     threadFactoryField.setAccessible(true)
 
     ap => threadFactoryField.get(ap).asInstanceOf[MonitorableThreadFactory]

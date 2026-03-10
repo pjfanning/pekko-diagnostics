@@ -9,29 +9,31 @@ object Dependencies {
   val Scala3 = "3.3.7"
   val CrossScalaVersions = Seq(Scala213, Scala212, Scala3)
 
-  val AkkaVersion = "2.7.0"
-  val AkkaVersionInDocs = AkkaVersion.take(3)
-  val AkkaHttpVersionInDocs = "10.4.0"
+  val PekkoVersion = "1.1.5"
+  val PekkoVersionInDocs = PekkoVersion.take(3)
+  val PekkoHttpVersionInDocs = "1.1.0"
   val ScalaTestVersion = "3.2.19"
 
   val commonsText = "org.apache.commons" % "commons-text" % "1.15.0" // ApacheV2
 
   object Compile {
-    val akkaActor = "com.typesafe.akka" %% "akka-actor" % AkkaVersion
+    val pekkoActor = "org.apache.pekko" %% "pekko-actor" % PekkoVersion
   }
 
   object TestDeps {
-    val akkaRemoting = "com.typesafe.akka" %% "akka-remote" % AkkaVersion
-    val akkaClusterMetrics = "com.typesafe.akka" %% "akka-cluster-metrics" % AkkaVersion
-    val akkaStreamTestKit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion
+    val pekkoRemoting = "org.apache.pekko" %% "pekko-remote" % PekkoVersion
+    val pekkoClusterMetrics = "org.apache.pekko" %% "pekko-cluster-metrics" % PekkoVersion
+    val pekkoStreamTestKit = "org.apache.pekko" %% "pekko-stream-testkit" % PekkoVersion
     val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
-    val akkaPersistenceTestKit = "com.typesafe.akka" %% "akka-persistence-testkit" % AkkaVersion
+    val pekkoPersistenceTestKit = "org.apache.pekko" %% "pekko-persistence-testkit" % PekkoVersion
+    val pekkoTestKit = "org.apache.pekko" %% "pekko-testkit" % PekkoVersion
     val junit = "junit" % "junit" % "4.13.2" // Common Public License 1.0
     val all = Seq(
-      akkaRemoting % Test,
-      akkaClusterMetrics % Test,
-      akkaStreamTestKit % Test,
-      akkaPersistenceTestKit % Test,
+      pekkoRemoting % Test,
+      pekkoClusterMetrics % Test,
+      pekkoStreamTestKit % Test,
+      pekkoPersistenceTestKit % Test,
+      pekkoTestKit % Test,
       scalaTest % Test, // ApacheV2
       junit % Test // Common Public License 1.0
     )
@@ -39,7 +41,7 @@ object Dependencies {
 
   import Compile._
 
-  val akkaDiagnostics = Seq(
+  val pekkoDiagnostics = Seq(
     commonsText, // for levenshtein distance impl
-    akkaActor) ++ TestDeps.all
+    pekkoActor) ++ TestDeps.all
 }

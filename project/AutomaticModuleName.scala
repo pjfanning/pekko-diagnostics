@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2016-2023 Lightbend Inc. <https://www.lightbend.com>
  */
-package akka
 
 import sbt.Keys._
 import sbt.Def

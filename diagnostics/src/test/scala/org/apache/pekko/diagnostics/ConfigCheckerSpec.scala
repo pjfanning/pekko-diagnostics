@@ -2,15 +2,15 @@
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package akka.diagnostics
+package org.apache.pekko.diagnostics
 
-import akka.actor.ActorSystem
-import akka.actor.ExtendedActorSystem
-import akka.diagnostics.ConfigChecker.ConfigWarning
-import akka.persistence.testkit.PersistenceTestKitDurableStateStorePlugin
-import akka.persistence.testkit.PersistenceTestKitPlugin
-import akka.persistence.testkit.PersistenceTestKitSnapshotPlugin
-import akka.testkit.EventFilter
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.actor.ExtendedActorSystem
+import org.apache.pekko.diagnostics.ConfigChecker.ConfigWarning
+import org.apache.pekko.persistence.testkit.PersistenceTestKitDurableStateStorePlugin
+import org.apache.pekko.persistence.testkit.PersistenceTestKitPlugin
+import org.apache.pekko.persistence.testkit.PersistenceTestKitSnapshotPlugin
+import org.apache.pekko.testkit.EventFilter
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
@@ -19,28 +19,28 @@ import scala.collection.JavaConverters._
 import scala.collection.immutable
 import scala.util.Try
 
-class ConfigCheckerSpec extends AkkaSpec {
+class ConfigCheckerSpec extends PekkoSpec {
 
   val reference = ConfigFactory.defaultReference()
 
   val defaultRemote = ConfigFactory
     .parseString(s"""
-    akka.actor.provider = akka.remote.RemoteActorRefProvider
+    pekko.actor.provider = org.apache.pekko.remote.RemoteActorRefProvider
     # otherwise it will warn about undefined hostname
-    akka.remote.artery.canonical.hostname = 127.0.0.1
-    akka.remote.artery.tcp.hostname = 127.0.0.1
-    akka.remote.artery.ssl.hostname = 127.0.0.1
-    akka.remote.watch-failure-detector.heartbeat-interval = 1 s
+    pekko.remote.artery.canonical.hostname = 127.0.0.1
+    pekko.remote.artery.tcp.hostname = 127.0.0.1
+    pekko.remote.artery.ssl.hostname = 127.0.0.1
+    pekko.remote.watch-failure-detector.heartbeat-interval = 1 s
     """)
     .withFallback(reference)
 
   val defaultCluster = ConfigFactory
     .parseString(s"""
-    akka.actor.provider = akka.cluster.ClusterActorRefProvider
+    pekko.actor.provider = org.apache.pekko.cluster.ClusterActorRefProvider
     # otherwise it will warn about undefined hostname
-    akka.remote.artery.canonical.hostname = 127.0.0.1
-    akka.remote.artery.tcp.hostname = 127.0.0.1
-    akka.remote.artery.ssl.hostname = 127.0.0.1
+    pekko.remote.artery.canonical.hostname = 127.0.0.1
+    pekko.remote.artery.tcp.hostname = 127.0.0.1
+    pekko.remote.artery.ssl.hostname = 127.0.0.1
     """)
     .withFallback(reference)
 
@@ -48,10 +48,10 @@ class ConfigCheckerSpec extends AkkaSpec {
 
   // verify that it can be disabled
   def assertDisabled(c: Config, checkerKeys: String*): Unit = {
-    val allDisabledCheckerKeys = c.getStringList("akka.diagnostics.checker.disabled-checks").asScala ++ checkerKeys
+    val allDisabledCheckerKeys = c.getStringList("pekko.diagnostics.checker.disabled-checks").asScala ++ checkerKeys
     val disabled = ConfigFactory
       .parseString(s"""
-        akka.diagnostics.checker.disabled-checks = [${allDisabledCheckerKeys.mkString(",")}]
+        pekko.diagnostics.checker.disabled-checks = [${allDisabledCheckerKeys.mkString(",")}]
       """)
       .withFallback(c)
     new ConfigChecker(extSys, disabled, reference).check().warnings should ===(Nil)
@@ -83,7 +83,7 @@ class ConfigCheckerSpec extends AkkaSpec {
         .withFallback(PersistenceTestKitDurableStateStorePlugin.config)
         .withFallback(ConfigFactory
           .parseString("""
-        akka.persistence.testkit.snapshotstore.pluginid.snapshot-is-optional = false
+        pekko.persistence.testkit.snapshotstore.pluginid.snapshot-is-optional = false
         """))
         .withFallback(reference)
 
@@ -91,7 +91,7 @@ class ConfigCheckerSpec extends AkkaSpec {
       checker.check().warnings should be(Nil)
     }
 
-    "find no warnings in akka-actor default configuration" in {
+    "find no warnings in pekko-actor default configuration" in {
       val checker = new ConfigChecker(extSys, reference, reference)
       checker.check().warnings should be(Nil)
     }
@@ -99,18 +99,18 @@ class ConfigCheckerSpec extends AkkaSpec {
     "find power user settings" in {
       val c = ConfigFactory
         .parseString("""
-        akka.version = 0.1
-        akka.actor.router.type-mapping.from-code = "Changed"
-        akka.actor.router.type-mapping.added = "Added"
-        akka.actor.router.type-mapping.added-ok = "AddedOk"
-        akka.actor.unstarted-push-timeout = 1s
+        pekko.version = 0.1
+        pekko.actor.router.type-mapping.from-code = "Changed"
+        pekko.actor.router.type-mapping.added = "Added"
+        pekko.actor.router.type-mapping.added-ok = "AddedOk"
+        pekko.actor.unstarted-push-timeout = 1s
 
         myapp.something = 17
 
-        akka.diagnostics.checker {
+        pekko.diagnostics.checker {
           confirmed-power-user-settings = [
-            akka.actor.unstarted-push-timeout,
-            akka.actor.router.type-mapping.added-ok
+            pekko.actor.unstarted-push-timeout,
+            pekko.actor.router.type-mapping.added-ok
           ]
 
           disabled-checks = [typo]
@@ -118,35 +118,35 @@ class ConfigCheckerSpec extends AkkaSpec {
       """)
         .withFallback(reference)
       val checker = new ConfigChecker(extSys, c, reference)
-      checker.isModifiedPowerUserSetting("akka.version") should ===(true)
-      checker.isModifiedPowerUserSetting("akka.loglevel") should ===(false)
+      checker.isModifiedPowerUserSetting("pekko.version") should ===(true)
+      checker.isModifiedPowerUserSetting("pekko.loglevel") should ===(false)
       checker.isModifiedPowerUserSetting("myapp.something") should ===(false)
-      // akka.daemonic is configured as power-user-settings, but it is not changed
-      checker.isModifiedPowerUserSetting("akka.daemonic") should ===(false)
+      // pekko.daemonic is configured as power-user-settings, but it is not changed
+      checker.isModifiedPowerUserSetting("pekko.daemonic") should ===(false)
 
-      checker.isModifiedPowerUserSetting("akka.actor.router.type-mapping.from-code") should ===(true)
-      checker.isModifiedPowerUserSetting("akka.actor.router.type-mapping.round-robin-pool") should ===(false)
-      checker.isModifiedPowerUserSetting("akka.actor.router.type-mapping.added") should ===(true)
+      checker.isModifiedPowerUserSetting("pekko.actor.router.type-mapping.from-code") should ===(true)
+      checker.isModifiedPowerUserSetting("pekko.actor.router.type-mapping.round-robin-pool") should ===(false)
+      checker.isModifiedPowerUserSetting("pekko.actor.router.type-mapping.added") should ===(true)
       // added-ok is configured in power-user-settings-disabled
-      checker.isModifiedPowerUserSetting("akka.actor.router.type-mapping.added-ok") should ===(false)
+      checker.isModifiedPowerUserSetting("pekko.actor.router.type-mapping.added-ok") should ===(false)
 
-      // akka.actor.unstarted-push-timeout is configured as power-user-settings, but disabled
-      checker.isModifiedPowerUserSetting("akka.actor.unstarted-push-timeout") should ===(false)
+      // pekko.actor.unstarted-push-timeout is configured as power-user-settings, but disabled
+      checker.isModifiedPowerUserSetting("pekko.actor.unstarted-push-timeout") should ===(false)
 
       val warnings = checker.check().warnings
       assertCheckerKey(warnings, "power-user-settings")
       assertPath(
         warnings,
-        "akka.version",
-        "akka.actor.router.type-mapping.from-code",
-        "akka.actor.router.type-mapping.added")
+        "pekko.version",
+        "pekko.actor.router.type-mapping.from-code",
+        "pekko.actor.router.type-mapping.added")
 
       assertDisabled(c, "power-user-settings", "typo")
     }
 
     "warn for jackson serialization if older than 2.6" in {
       val c = ConfigFactory
-        .parseString("akka.serialization.jackson.type-in-manifest=off")
+        .parseString("pekko.serialization.jackson.type-in-manifest=off")
         .withFallback(reference)
       val checker = new ConfigChecker(extSys, c, reference)
 
@@ -157,11 +157,11 @@ class ConfigCheckerSpec extends AkkaSpec {
     "find typos and misplacements" in {
       val c = ConfigFactory
         .parseString("""
-        akka.loglevel = DEBUG # ok
-        akka.log-level = INFO # typo
-        akka.actor.loglevel = WARNING # misplacement
-        akka.actor.serialize-messages = on # ok
-        akka.actor.deployment {
+        pekko.loglevel = DEBUG # ok
+        pekko.log-level = INFO # typo
+        pekko.actor.loglevel = WARNING # misplacement
+        pekko.actor.serialize-messages = on # ok
+        pekko.actor.deployment {
           /parent/router1 {
             router = round-robin-pool
             nr-of-instances = 5
@@ -185,11 +185,11 @@ class ConfigCheckerSpec extends AkkaSpec {
       assertCheckerKey(warnings, "typo")
       assertPath(
         warnings,
-        "akka.log-level",
-        "akka.actor.loglevel",
-        """akka.actor.deployment."/parent/router2".number-of-instances""",
+        "pekko.log-level",
+        "pekko.actor.loglevel",
+        """pekko.actor.deployment."/parent/router2".number-of-instances""",
         "my-dispatcher.throowput",
-        "akka.actor.deployment.foo")
+        "pekko.actor.deployment.foo")
 
       assertDisabled(c, "typo")
     }
@@ -197,19 +197,19 @@ class ConfigCheckerSpec extends AkkaSpec {
     "not warn about typos in some sections" in {
       val c = ConfigFactory
         .parseString("""
-        akka.actor {
+        pekko.actor {
           serializers {
-            test = "akka.serialization.JavaSerializer"
+            test = "org.apache.pekko.serialization.JavaSerializer"
           }
           serialization-bindings {
             "java.util.Date" = test
           }
           deployment."/foo".pool-dispatcher.fork-join-executor.parallelism-max = 10
         }
-        akka.cluster.role.backend.min-nr-of-members = 3
-        akka.test.alright = 17
+        pekko.cluster.role.backend.min-nr-of-members = 3
+        pekko.test.alright = 17
 
-        akka.diagnostics.checker.confirmed-typos = ["akka.test.alright"]
+        pekko.diagnostics.checker.confirmed-typos = ["pekko.test.alright"]
       """)
         .withFallback(reference)
       val checker = new ConfigChecker(extSys, c, reference)
@@ -219,14 +219,14 @@ class ConfigCheckerSpec extends AkkaSpec {
     "find unsupported provider" in {
       val c = ConfigFactory
         .parseString("""
-        akka.actor.provider = some.Other
+        pekko.actor.provider = some.Other
       """)
         .withFallback(reference)
       val checker = new ConfigChecker(extSys, c, reference)
       val warnings = checker.check().warnings
       printDocWarnings(warnings)
       assertCheckerKey(warnings, "actor-ref-provider")
-      assertPath(warnings, "akka.actor.provider")
+      assertPath(warnings, "pekko.actor.provider")
 
       assertDisabled(c, "actor-ref-provider")
     }
@@ -234,7 +234,7 @@ class ConfigCheckerSpec extends AkkaSpec {
     "find disabled jvm exit" in {
       val c = ConfigFactory
         .parseString("""
-        akka.jvm-exit-on-fatal-error = off
+        pekko.jvm-exit-on-fatal-error = off
       """)
         .withFallback(reference)
       val checker = new ConfigChecker(extSys, c, reference)
@@ -242,7 +242,7 @@ class ConfigCheckerSpec extends AkkaSpec {
       val warnings = checker.check().warnings
       printDocWarnings(warnings)
       assertCheckerKey(warnings, "jvm-exit-on-fatal-error")
-      assertPath(warnings, "akka.jvm-exit-on-fatal-error")
+      assertPath(warnings, "pekko.jvm-exit-on-fatal-error")
 
       assertDisabled(c, "jvm-exit-on-fatal-error")
     }
@@ -250,18 +250,18 @@ class ConfigCheckerSpec extends AkkaSpec {
     "find default-dispatcher size issues" in {
       val c = ConfigFactory
         .parseString("""
-        akka.actor.default-dispatcher = {
+        pekko.actor.default-dispatcher = {
           fork-join-executor.parallelism-min = 512
           fork-join-executor.parallelism-max = 512
         }
-        akka.diagnostics.checker.disabled-checks = ["fork-join-pool-size"]
+        pekko.diagnostics.checker.disabled-checks = ["fork-join-pool-size"]
       """)
         .withFallback(reference)
       val checker = new ConfigChecker(extSys, c, reference)
 
       val warnings = checker.check().warnings
       printDocWarnings(warnings)
-      assertPath(warnings, "akka.actor.default-dispatcher")
+      assertPath(warnings, "pekko.actor.default-dispatcher")
       assertCheckerKey(warnings, "default-dispatcher-size")
 
       assertDisabled(c, "default-dispatcher-size")
@@ -270,11 +270,11 @@ class ConfigCheckerSpec extends AkkaSpec {
     "check internal-dispatcher as default-dispatcher is find" in {
       val c = ConfigFactory
         .parseString(s"""
-          |akka.actor.default-dispatcher = {
+          |pekko.actor.default-dispatcher = {
           |  type = "Dispatcher"
           |  # ...
           |  }
-          |akka.actor.internal-dispatcher = $${akka.actor.default-dispatcher}  """.stripMargin)
+          |pekko.actor.internal-dispatcher = $${pekko.actor.default-dispatcher}  """.stripMargin)
         .resolve()
         .withFallback(reference)
 
@@ -288,19 +288,19 @@ class ConfigCheckerSpec extends AkkaSpec {
       val c = ConfigFactory
         .parseString("""
         #//#internal-dispatcher-large
-        akka.actor.internal-dispatcher = {
+        pekko.actor.internal-dispatcher = {
           fork-join-executor.parallelism-min = 512
           fork-join-executor.parallelism-max = 512
         }
         #//#internal-dispatcher-large
-        akka.diagnostics.checker.disabled-checks = ["fork-join-pool-size"]
+        pekko.diagnostics.checker.disabled-checks = ["fork-join-pool-size"]
       """)
         .withFallback(reference)
       val checker = new ConfigChecker(extSys, c, reference)
 
       val warnings = checker.check().warnings
       printDocWarnings(warnings)
-      assertPath(warnings, "akka.actor.internal-dispatcher")
+      assertPath(warnings, "pekko.actor.internal-dispatcher")
       assertCheckerKey(warnings, "internal-dispatcher-size")
 
       assertDisabled(c, "internal-dispatcher-size")
@@ -309,18 +309,18 @@ class ConfigCheckerSpec extends AkkaSpec {
     "find default-dispatcher type issues" in {
       val c = ConfigFactory
         .parseString("""
-        akka.actor.default-dispatcher = {
+        pekko.actor.default-dispatcher = {
           type = PinnedDispatcher
           executor = thread-pool-executor
         }
-        akka.diagnostics.checker.disabled-checks = ["default-dispatcher-size"]
+        pekko.diagnostics.checker.disabled-checks = ["default-dispatcher-size"]
       """)
         .withFallback(reference)
       val checker = new ConfigChecker(extSys, c, reference)
 
       val warnings = checker.check().warnings
       assertCheckerKey(warnings, "default-dispatcher-type")
-      assertPath(warnings, "akka.actor.default-dispatcher")
+      assertPath(warnings, "pekko.actor.default-dispatcher")
 
       assertDisabled(c, "default-dispatcher-type")
     }
@@ -328,7 +328,7 @@ class ConfigCheckerSpec extends AkkaSpec {
     "find default-dispatcher throughput issues" in {
       val c = ConfigFactory
         .parseString("""
-        akka.actor.default-dispatcher = {
+        pekko.actor.default-dispatcher = {
           throughput = 200
           # expected
           # throughput-deadline-time = 1s
@@ -341,8 +341,8 @@ class ConfigCheckerSpec extends AkkaSpec {
       assertCheckerKey(warnings, "dispatcher-throughput")
       assertPath(
         warnings,
-        "akka.actor.default-dispatcher.throughput",
-        "akka.actor.default-dispatcher.throughput-deadline-time")
+        "pekko.actor.default-dispatcher.throughput",
+        "pekko.actor.default-dispatcher.throughput-deadline-time")
 
       assertDisabled(c, "dispatcher-throughput")
     }
@@ -437,23 +437,24 @@ class ConfigCheckerSpec extends AkkaSpec {
     }
 
     "find creating actor remotely while using cluster provider" in {
+      // Pekko default port is 7355, so using 7356 to avoid conflicts when running tests locally
       val c = ConfigFactory
         .parseString("""
-          |akka.actor.deployment./sampleactor.remote = "akka.tcp://sampleActorSystem@127.0.0.1:2553" """.stripMargin)
+          |pekko.actor.deployment./sampleactor.remote = "pekko.tcp://sampleActorSystem@127.0.0.1:7356" """.stripMargin)
         .withFallback(defaultCluster)
       val checker = new ConfigChecker(extSys, c, reference)
       val warnings = checker.check().warnings
 
       printDocWarnings(warnings)
       assertCheckerKey(warnings, "create-actor-remotely")
-      assertPath(warnings, """akka.actor.deployment."/...".remote"""")
+      assertPath(warnings, """pekko.actor.deployment."/...".remote"""")
       assertDisabled(c, "create-actor-remotely")
     }
 
-    "find akka.remote.watch-failure-detector.* hasn't been changed when akka.actor.provider=cluster" in {
+    "find pekko.remote.watch-failure-detector.* hasn't been changed when pekko.actor.provider=cluster" in {
       val c = ConfigFactory
         .parseString("""
-          |akka.remote.watch-failure-detector.acceptable-heartbeat-pause = 20s""".stripMargin)
+          |pekko.remote.watch-failure-detector.acceptable-heartbeat-pause = 20s""".stripMargin)
         .withFallback(defaultCluster)
       val checker = new ConfigChecker(extSys, c, reference)
       val warnings = checker.check().warnings
@@ -462,8 +463,8 @@ class ConfigCheckerSpec extends AkkaSpec {
       assertCheckerKey(warnings, "remote-watch-failure-detector-with-cluster", "power-user-settings")
       assertPath(
         warnings,
-        "akka.remote.watch-failure-detector.*",
-        "akka.remote.watch-failure-detector.acceptable-heartbeat-pause")
+        "pekko.remote.watch-failure-detector.*",
+        "pekko.remote.watch-failure-detector.acceptable-heartbeat-pause")
       assertDisabled(c, "remote-watch-failure-detector-with-cluster", "power-user-settings")
     }
 
@@ -516,7 +517,7 @@ class ConfigCheckerSpec extends AkkaSpec {
       paths should contain("disp1")
       paths should contain("disp2")
       paths should contain("disp3")
-      paths should not contain "akka.actor.default-dispatcher"
+      paths should not contain "pekko.actor.default-dispatcher"
 
       assertDisabled(c, "dispatcher-total-size")
     }
@@ -524,31 +525,31 @@ class ConfigCheckerSpec extends AkkaSpec {
     "find remote artery disabled" in {
       val c = ConfigFactory
         .parseString("""
-          |akka.remote.artery.enabled = false""".stripMargin)
+          |pekko.remote.artery.enabled = false""".stripMargin)
         .withFallback(defaultCluster)
       val checker = new ConfigChecker(extSys, c, reference)
 
       val warnings = checker.check().warnings
       printDocWarnings(warnings)
       assertCheckerKey(warnings, "remote-artery-disabled")
-      assertPath(warnings, "akka.remote.artery.enabled")
+      assertPath(warnings, "pekko.remote.artery.enabled")
       assertDisabled(c, "remote-artery-disabled")
     }
 
     "find suspect remote watch failure detector" in {
       val configStrings = List(
-        "akka.remote.watch-failure-detector.heartbeat-interval = 100ms",
-        "akka.remote.watch-failure-detector.heartbeat-interval = 20s",
-        "akka.remote.watch-failure-detector.acceptable-heartbeat-pause = 3s",
-        "akka.remote.watch-failure-detector.acceptable-heartbeat-pause = 2 minutes",
-        """akka.remote.watch-failure-detector.heartbeat-interval = 10s
-          akka.remote.watch-failure-detector.acceptable-heartbeat-pause = 20s""")
+        "pekko.remote.watch-failure-detector.heartbeat-interval = 100ms",
+        "pekko.remote.watch-failure-detector.heartbeat-interval = 20s",
+        "pekko.remote.watch-failure-detector.acceptable-heartbeat-pause = 3s",
+        "pekko.remote.watch-failure-detector.acceptable-heartbeat-pause = 2 minutes",
+        """pekko.remote.watch-failure-detector.heartbeat-interval = 10s
+          pekko.remote.watch-failure-detector.acceptable-heartbeat-pause = 20s""")
 
       val configs = configStrings.map(c =>
         ConfigFactory
           .parseString(c)
-          .withFallback(ConfigFactory.parseString("""akka.diagnostics.checker.confirmed-power-user-settings =
-            ["akka.remote.watch-failure-detector.unreachable-nodes-reaper-interval"]"""))
+          .withFallback(ConfigFactory.parseString("""pekko.diagnostics.checker.confirmed-power-user-settings =
+            ["pekko.remote.watch-failure-detector.unreachable-nodes-reaper-interval"]"""))
           .withFallback(defaultRemote))
       configs.zipWithIndex.foreach { case (c, i) =>
         withClue(s"problem with config #${i + 1}") {
@@ -564,7 +565,7 @@ class ConfigCheckerSpec extends AkkaSpec {
     "find default-remote-dispatcher-size size issues" in {
       val c = ConfigFactory
         .parseString("""
-          akka.remote.default-remote-dispatcher = {
+          pekko.remote.default-remote-dispatcher = {
             fork-join-executor.parallelism-min = 1
             fork-join-executor.parallelism-max = 1
           }
@@ -574,7 +575,7 @@ class ConfigCheckerSpec extends AkkaSpec {
 
       val warnings = checker.check().warnings
       printDocWarnings(warnings)
-      assertPath(warnings, "akka.remote.default-remote-dispatcher", "akka.actor.provider")
+      assertPath(warnings, "pekko.remote.default-remote-dispatcher", "pekko.actor.provider")
       assertCheckerKey(warnings, "default-remote-dispatcher-size", "remote-prefer-cluster")
       assertDisabled(c, "default-remote-dispatcher-size", "remote-prefer-cluster")
     }
@@ -582,7 +583,7 @@ class ConfigCheckerSpec extends AkkaSpec {
     "recommend against dedicated cluster dispatcher" in {
       val c = ConfigFactory
         .parseString("""
-          akka.cluster.use-dispatcher = disp1
+          pekko.cluster.use-dispatcher = disp1
           disp1 = {
             fork-join-executor.parallelism-min = 6
             fork-join-executor.parallelism-max = 6
@@ -593,14 +594,14 @@ class ConfigCheckerSpec extends AkkaSpec {
       val warnings = checker.check().warnings
       printDocWarnings(warnings)
       assertCheckerKey(warnings, "cluster-dispatcher")
-      assertPath(warnings, "akka.cluster.use-dispatcher")
+      assertPath(warnings, "pekko.cluster.use-dispatcher")
       assertDisabled(c, "cluster-dispatcher")
     }
 
     "warn about too small cluster dispatcher" in {
       val c = ConfigFactory
         .parseString("""
-          akka.cluster.use-dispatcher = disp1
+          pekko.cluster.use-dispatcher = disp1
           disp1 = {
             fork-join-executor.parallelism-min = 1
             fork-join-executor.parallelism-max = 1
@@ -610,24 +611,24 @@ class ConfigCheckerSpec extends AkkaSpec {
       val checker = new ConfigChecker(extSys, c, reference)
       val warnings = checker.check().warnings
       assertCheckerKey(warnings, "cluster-dispatcher")
-      assertPath(warnings, "akka.cluster.use-dispatcher", "disp1")
+      assertPath(warnings, "pekko.cluster.use-dispatcher", "disp1")
       assertDisabled(c, "cluster-dispatcher")
     }
 
     "find suspect cluster failure detector" in {
       val configStrings = List(
-        "akka.cluster.failure-detector.heartbeat-interval = 100ms",
-        "akka.cluster.failure-detector.heartbeat-interval = 20s",
-        "akka.cluster.failure-detector.acceptable-heartbeat-pause = 2s",
-        "akka.cluster.failure-detector.acceptable-heartbeat-pause = 2 minutes",
-        """akka.cluster.failure-detector.heartbeat-interval = 10s
-          akka.cluster.failure-detector.acceptable-heartbeat-pause = 20s""")
+        "pekko.cluster.failure-detector.heartbeat-interval = 100ms",
+        "pekko.cluster.failure-detector.heartbeat-interval = 20s",
+        "pekko.cluster.failure-detector.acceptable-heartbeat-pause = 2s",
+        "pekko.cluster.failure-detector.acceptable-heartbeat-pause = 2 minutes",
+        """pekko.cluster.failure-detector.heartbeat-interval = 10s
+          pekko.cluster.failure-detector.acceptable-heartbeat-pause = 20s""")
 
       val configs = configStrings.map(c =>
         ConfigFactory
           .parseString(c)
-          .withFallback(ConfigFactory.parseString("""akka.diagnostics.checker.confirmed-power-user-settings =
-            ["akka.cluster.unreachable-nodes-reaper-interval"]"""))
+          .withFallback(ConfigFactory.parseString("""pekko.diagnostics.checker.confirmed-power-user-settings =
+            ["pekko.cluster.unreachable-nodes-reaper-interval"]"""))
           .withFallback(defaultCluster))
       configs.zipWithIndex.foreach { case (c, i) =>
         withClue(s"problem with config #${i + 1}") {
@@ -641,20 +642,20 @@ class ConfigCheckerSpec extends AkkaSpec {
 
     "find suspect SBR configuration" in {
       val configStrings = List(
-        """akka.cluster.down-removal-margin = 3s
-          akka.cluster.split-brain-resolver.stable-after = 3s
-          akka.cluster.split-brain-resolver.active-strategy = keep-majority""",
-        """akka.cluster.down-removal-margin = 10s
-          akka.cluster.split-brain-resolver.active-strategy = keep-majority
+        """pekko.cluster.down-removal-margin = 3s
+          pekko.cluster.split-brain-resolver.stable-after = 3s
+          pekko.cluster.split-brain-resolver.active-strategy = keep-majority""",
+        """pekko.cluster.down-removal-margin = 10s
+          pekko.cluster.split-brain-resolver.active-strategy = keep-majority
           # should also configure
-          #akka.cluster.split-brain-resolver.stable-after = 10s""",
-        """akka.cluster.down-removal-margin = 10s
-          akka.cluster.split-brain-resolver.stable-after = 15s
-          akka.cluster.split-brain-resolver.active-strategy = keep-majority""",
+          #pekko.cluster.split-brain-resolver.stable-after = 10s""",
+        """pekko.cluster.down-removal-margin = 10s
+          pekko.cluster.split-brain-resolver.stable-after = 15s
+          pekko.cluster.split-brain-resolver.active-strategy = keep-majority""",
         s"""
-          akka.cluster.auto-down-unreachable-after = 10s
-          akka.cluster.split-brain-resolver.active-strategy = keep-majority
-          akka.diagnostics.checker.disabled-checks = [auto-down, typo]
+          pekko.cluster.auto-down-unreachable-after = 10s
+          pekko.cluster.split-brain-resolver.active-strategy = keep-majority
+          pekko.diagnostics.checker.disabled-checks = [auto-down, typo]
           """)
 
       val configs = configStrings.map(c =>
@@ -674,8 +675,8 @@ class ConfigCheckerSpec extends AkkaSpec {
 
     "not check SBR if reference.conf doesn't contain split-brain-resolver section" in {
       // akka-split-brain-resolver is in classpath and in this test we want to simulate that it wasn't
-      val referenceWithoutSbr = ConfigFactory.defaultReference().withoutPath("akka.cluster.split-brain-resolver")
-      val clusterWithoutSbr = defaultCluster.withoutPath("akka.cluster.split-brain-resolver")
+      val referenceWithoutSbr = ConfigFactory.defaultReference().withoutPath("pekko.cluster.split-brain-resolver")
+      val clusterWithoutSbr = defaultCluster.withoutPath("pekko.cluster.split-brain-resolver")
 
       val checker = new ConfigChecker(extSys, clusterWithoutSbr, referenceWithoutSbr)
       val warnings = checker.check().warnings
@@ -684,12 +685,12 @@ class ConfigCheckerSpec extends AkkaSpec {
 
     "not check SBR if reference.conf doesn't contain split-brain-resolver section, even if included in application.conf" in {
       // akka-split-brain-resolver is in classpath and in this test we want to simulate that it wasn't
-      val referenceWithoutSbr = ConfigFactory.defaultReference().withoutPath("akka.cluster.split-brain-resolver")
-      val clusterWithoutSbr = defaultCluster.withoutPath("akka.cluster.split-brain-resolver")
+      val referenceWithoutSbr = ConfigFactory.defaultReference().withoutPath("pekko.cluster.split-brain-resolver")
+      val clusterWithoutSbr = defaultCluster.withoutPath("pekko.cluster.split-brain-resolver")
       val c = ConfigFactory
         .parseString("""
-        akka.cluster.split-brain-resolver.active-strategy = keep-majority
-        akka.cluster.down-removal-margin = 1s
+        pekko.cluster.split-brain-resolver.active-strategy = keep-majority
+        pekko.cluster.down-removal-margin = 1s
         """)
         .withFallback(clusterWithoutSbr)
 
@@ -702,8 +703,8 @@ class ConfigCheckerSpec extends AkkaSpec {
     "log warning when ActorSystem startup" in {
       val c = ConfigFactory
         .parseString("""
-          akka.log-level = INFO # typo, it should be akka.loglevel
-          akka.diagnostics.checker.async-check-after = 200ms
+          pekko.log-level = INFO # typo, it should be pekko.loglevel
+          pekko.diagnostics.checker.async-check-after = 200ms
         """)
         .withFallback(system.settings.config)
       val logSource = classOf[ConfigChecker].getName
@@ -721,8 +722,8 @@ class ConfigCheckerSpec extends AkkaSpec {
     "fail startup if configured to fail" in {
       val c = ConfigFactory
         .parseString("""
-          akka.log-level = INFO # typo
-          akka.diagnostics.checker.fail-on-warning = on
+          pekko.log-level = INFO # typo
+          pekko.diagnostics.checker.fail-on-warning = on
         """)
         .withFallback(system.settings.config)
 
@@ -734,9 +735,9 @@ class ConfigCheckerSpec extends AkkaSpec {
     "be possible to disable" in {
       val c = ConfigFactory
         .parseString("""
-          akka.log-level = INFO # typo
-          akka.diagnostics.checker.fail-on-warning = on
-          akka.diagnostics.checker.enabled = off
+          pekko.log-level = INFO # typo
+          pekko.diagnostics.checker.fail-on-warning = on
+          pekko.diagnostics.checker.enabled = off
         """)
         .withFallback(system.settings.config)
 
@@ -761,19 +762,19 @@ class ConfigCheckerSpec extends AkkaSpec {
           #//#dispatcher-throughput
 
           #//#typo
-          akka.log-level=DEBUG
+          pekko.log-level=DEBUG
 
-          akka.default-dispatcher {
+          pekko.default-dispatcher {
             throughput = 10
           }
           #//#typo
 
           #//#power-user
-          akka.cluster.gossip-interval = 5s
+          pekko.cluster.gossip-interval = 5s
           #//#power-user
 
           #//#default-dispatcher-size-large
-          akka.actor.default-dispatcher = {
+          pekko.actor.default-dispatcher = {
             fork-join-executor.parallelism-min = 512
             fork-join-executor.parallelism-max = 512
           }
@@ -788,7 +789,7 @@ class ConfigCheckerSpec extends AkkaSpec {
           #//#fork-join-large
 
           #//#cluster-fd-short
-          akka.cluster.failure-detector.acceptable-heartbeat-pause = 1s
+          pekko.cluster.failure-detector.acceptable-heartbeat-pause = 1s
           #//#cluster-fd-short
 
         """
@@ -796,24 +797,24 @@ class ConfigCheckerSpec extends AkkaSpec {
       val c2 =
         """
         #//#cluster-fd-ratio
-        akka.cluster.failure-detector {
+        pekko.cluster.failure-detector {
           heartbeat-interval = 3s
           acceptable-heartbeat-pause = 6s
         }
         #//#cluster-fd-ratio
 
         #//#remote-watch-fd-short
-        akka.remote.watch-failure-detector.acceptable-heartbeat-pause = 3s
+        pekko.remote.watch-failure-detector.acceptable-heartbeat-pause = 3s
         #//#remote-watch-fd-short
 
         #//#disabled-checks
-        akka.diagnostics.checker {
+        pekko.diagnostics.checker {
           disabled-checks = [dispatcher-throughput]
         }
         #//#disabled-checks
 
         #//#disabled
-        akka.diagnostics.checker.enabled = off
+        pekko.diagnostics.checker.enabled = off
         #//#disabled
         """
 
@@ -825,7 +826,7 @@ class ConfigCheckerSpec extends AkkaSpec {
           printDocWarnings(warnings)
 
           // no other than the expected typos, please
-          val expectedTypos = Set("akka.log-level", "akka.default-dispatcher.throughput")
+          val expectedTypos = Set("pekko.log-level", "pekko.default-dispatcher.throughput")
           warnings.foreach { w =>
             if (w.checkerKey == "typo")(w.paths.toSet.diff(expectedTypos)) should be(Set.empty)
           }
@@ -837,7 +838,7 @@ class ConfigCheckerSpec extends AkkaSpec {
     "avoid spurious coordinated-shutdown warnings" in {
       val config = ConfigFactory
         .parseString("""
-        akka.coordinated-shutdown.phases {
+        pekko.coordinated-shutdown.phases {
           before-service-unbind {
             timeout = 10 seconds
           }
@@ -861,14 +862,14 @@ class ConfigCheckerSpec extends AkkaSpec {
 
       printDocWarnings(warnings)
       assertCheckerKey(warnings, "remote-prefer-cluster")
-      assertPath(warnings, "akka.actor.provider")
+      assertPath(warnings, "pekko.actor.provider")
       assertDisabled(c, "remote-prefer-cluster")
     }
 
     "not warn about the dynamic hostnames when artery is used" in {
       val config1 = ConfigFactory
         .parseString("""
-       akka {
+       pekko {
          actor {
            provider = remote
          }
@@ -889,17 +890,17 @@ class ConfigCheckerSpec extends AkkaSpec {
 
       printDocWarnings(warnings)
       assertCheckerKey(warnings, "hostname", "remote-prefer-cluster")
-      assertPath(warnings, "akka.remote.artery.canonical.hostname", "akka.actor.provider")
+      assertPath(warnings, "pekko.remote.artery.canonical.hostname", "pekko.actor.provider")
 
       val config2 =
-        ConfigFactory.parseString("""akka.remote.artery.canonical.hostname = "<getHostName>" """).withFallback(config1)
+        ConfigFactory.parseString("""pekko.remote.artery.canonical.hostname = "<getHostName>" """).withFallback(config1)
 
       val checker2 = new ConfigChecker(extSys, config2, reference)
       val warnings2 = checker2.check().warnings
 
       printDocWarnings(warnings2)
       assertCheckerKey(warnings2, "hostname", "remote-prefer-cluster")
-      assertPath(warnings2, "akka.remote.artery.canonical.hostname", "akka.actor.provider")
+      assertPath(warnings2, "pekko.remote.artery.canonical.hostname", "pekko.actor.provider")
       assertDisabled(config2, "hostname", "remote-prefer-cluster")
 
     }
@@ -908,9 +909,9 @@ class ConfigCheckerSpec extends AkkaSpec {
       // these are brought in through some trix in akka-http
       val config = ConfigFactory
         .parseString("""
-          akka.http.server.parsing.illegal-header-warnings = on
-          akka.http.client.parsing.illegal-header-warnings = on
-          akka.http.host-connection-pool.parsing.illegal-header-warnings = on
+          pekko.http.server.parsing.illegal-header-warnings = on
+          pekko.http.client.parsing.illegal-header-warnings = on
+          pekko.http.host-connection-pool.parsing.illegal-header-warnings = on
         """)
         .withFallback(reference)
 
@@ -931,7 +932,7 @@ class ConfigCheckerSpec extends AkkaSpec {
 
     @nowarn("msg=possible missing interpolator")
     val defaultGrpc = ConfigFactory.parseString("""
-      akka.grpc.client."*" {
+      pekko.grpc.client."*" {
         host = ""
         port = 0
         ssl-config = ${ssl-config}
@@ -940,7 +941,7 @@ class ConfigCheckerSpec extends AkkaSpec {
 
     "not warn about paths with quotes" in {
       val config = ConfigFactory
-        .parseString("""akka.grpc.client."*".ssl-config.hostnameVerifierClass = 37""")
+        .parseString("""pekko.grpc.client."*".ssl-config.hostnameVerifierClass = 37""")
         .withFallback(reference)
       val referenceWithGrpc = reference.withFallback(defaultGrpc).resolve
       val checker = new ConfigChecker(extSys, config, referenceWithGrpc)
@@ -949,10 +950,10 @@ class ConfigCheckerSpec extends AkkaSpec {
       warnings should be(Vector.empty)
     }
 
-    "warn about paths under akka.grpc.client for specific services" in {
+    "warn about paths under pekko.grpc.client for specific services" in {
       val config = ConfigFactory
         .parseString("""
-        akka.grpc.client {
+        pekko.grpc.client {
           "helloworld.GreeterService" {
             host = 127.0.0.1
             poort = 8080
@@ -969,13 +970,13 @@ class ConfigCheckerSpec extends AkkaSpec {
         Vector(
           ConfigWarning(
             "typo",
-            """akka.grpc.client."helloworld.GreeterService".poort is not an Akka configuration setting. Did you mean one of 'akka.remote.classic.netty.tcp.port', 'akka.remote.classic.netty.ssl.port', 'akka.remote.artery.bind.port'? Is it a typo or is it placed in the wrong section? Application specific properties should be placed outside the "akka" config tree.""",
-            List("""akka.grpc.client."helloworld.GreeterService".poort"""),
+            """pekko.grpc.client."helloworld.GreeterService".poort is not a Pekko configuration setting. Did you mean one of 'pekko.grpc.client.*.port', 'pekko.remote.artery.bind.port', 'pekko.remote.artery.canonical.port'? Is it a typo or is it placed in the wrong section? Application specific properties should be placed outside the "pekko" config tree.""",
+            List("""pekko.grpc.client."helloworld.GreeterService".poort"""),
             List()),
           ConfigWarning(
             "typo",
-            """akka.grpc.client.otherValue is not an Akka configuration setting. Is it a typo or is it placed in the wrong section? Application specific properties should be placed outside the "akka" config tree.""",
-            List("""akka.grpc.client.otherValue"""),
+            """pekko.grpc.client.otherValue is not a Pekko configuration setting. Is it a typo or is it placed in the wrong section? Application specific properties should be placed outside the "pekko" config tree.""",
+            List("""pekko.grpc.client.otherValue"""),
             List())))
     }
 

@@ -1,6 +1,6 @@
-# Akka Thread Starvation Detector
+# Pekko Thread Starvation Detector
 
-The Akka Thread Starvation Detector is a diagnostic tool that monitors the dispatcher of an `ActorSystem` and
+The Pekko Thread Starvation Detector is a diagnostic tool that monitors the dispatcher of an `ActorSystem` and
 will log a warning if the dispatcher becomes unresponsive.
 
 The most common reason for an `ActorSystem` to become unresponsive is that blocking tasks are run on the
@@ -8,7 +8,7 @@ dispatcher and other tasks cannot be executed in a timely fashion any more. This
 because tasks (like handling an Actor's mailbox or executing a Future callback) are usually expected to finish
 in very short time on a healthy `ActorSystem`. When thread starvation occurs, all threads of the dispatcher's
 thread pool are blocking e.g. doing IO, delaying other work for indefinite periods of time. The symptoms of thread
-starvation are usually increased latency (despite low CPU usage), timeouts, or failing Akka Remote connections.
+starvation are usually increased latency (despite low CPU usage), timeouts, or failing Pekko Remote connections.
 
 The Starvation Detector will periodically schedule a simple task to measure the scheduling and execution time of
 the dispatcher. If a threshold is exceeded, a warning is logged with stack traces that show what threads of the
@@ -16,35 +16,35 @@ dispatcher are busy with.
 
 ## Project Info
 
-@@project-info{ projectId="akka-diagnostics" }
+@@project-info{ projectId="pekko-diagnostics" }
 
 ## Using the Starvation Detector
 
-To use the Starvation Detector feature a dependency on the *akka-diagnostics* artifact must be added.
+To use the Starvation Detector feature a dependency on the *pekko-diagnostics* artifact must be added.
 
 @@dependency [Maven,sbt,Gradle] {
-  group=com.lightbend.akka
-  artifact=akka-diagnostics_$scala.binary.version$
+  group=com.github.pjfanning
+  artifact=pekko-diagnostics_$scala.binary.version$
   version=$project.version$
 }
 
-This plugin depends on Akka $akka.version$ or later, and note that it is important that all `akka-*` 
+This plugin depends on Pekko $pekko.version$ or later, and note that it is important that all `pekko-*` 
 dependencies are in the same version, so it is recommended to depend on them explicitly to avoid problems 
 with transient dependencies causing an unlucky mix of versions.
 
 When this dependency is included the Starvation Detector is automatically run when the *ActorSystem*
 is started.
 
-You can create starvation detectors for other execution contexts than the main Akka ActorSystem one as well.
-Use `com.lightbend.akka.diagnostics.StarvationDetector.checkExecutionContext` to create a starvation detector
+You can create starvation detectors for other execution contexts than the main Pekko ActorSystem one as well.
+Use `org.apache.pekko.diagnostics.StarvationDetector.checkExecutionContext` to create a starvation detector
 for any `ExecutionContext` (though, it will not include stack trace information if the `ExecutionContext`
-is not an Akka Dispatcher).
+is not an Pekko Dispatcher).
 
 ## Configuration
 
 You can customize settings of the starvation detector to prevent spurious logging depending on your application logic.
 
-@@snip [reference.conf](/akka-diagnostics/src/main/resources/reference.conf) { #starvation-detector}
+@@snip [reference.conf](/diagnostics/src/main/resources/reference.conf) { #starvation-detector}
 
 By default, the starvation detector runs seldom enough not to cause any performance hit itself. Thread starvation issues usually affect
 systems for longer time spans, so the starvation detector is still likely to experience and warn even when it runs only infrequently.
@@ -60,8 +60,8 @@ When using the Starvation Detector with Java 17 or higher you have to add JVM fl
 Here's an example warning (taken from our tests that simulate blocking calls using `Thread.sleep`):
 
 ```
-[WARN] [04/24/2017 15:38:35.661] [Thread-217] [StarvationDetector(akka://StarvationDetectorSpec)] Exceedingly long scheduling
-time on ExecutionContext Dispatcher[akka.actor.default-dispatcher]. Starvation detector task was only executed after 714 ms which is
+[WARN] [04/24/2017 15:38:35.661] [Thread-217] [StarvationDetector(pekko://StarvationDetectorSpec)] Exceedingly long scheduling
+time on ExecutionContext Dispatcher[pekko.actor.default-dispatcher]. Starvation detector task was only executed after 714 ms which is
 longer than the warning threshold of 100 milliseconds. This might be a sign of thread, CPU, or dispatcher starvation.
 This can be caused by blocking calls, CPU overload, GC, or overlong work units. See the below information for hints
 about what could be the cause. Next warning will be shown in 10000 milliseconds.
@@ -94,6 +94,6 @@ give more useful information.
 
 ## Solving Thread Starvation Issues
 
-See @extref:[Blocking Needs Careful Management](akka:dispatchers.html#blocking-needs-careful-management) in
-the Akka reference documentation. The Akka-Http documentation also has a page on @extref:["Handling blocking operations"](akka-http:handling-blocking-operations-in-akka-http-routes.html)
-that applies generally to all Akka applications.
+See @extref:[Blocking Needs Careful Management](pekko:dispatchers.html#blocking-needs-careful-management) in
+the Pekko reference documentation. The Pekko-Http documentation also has a page on @extref:["Handling blocking operations"](pekko-http:handling-blocking-operations-in-pekko-http-routes.html)
+that applies generally to all Pekko applications.
