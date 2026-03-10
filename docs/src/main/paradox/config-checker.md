@@ -354,7 +354,7 @@ the application and for that purpose the `ConfigChecker` can be run as a
 Java main program. The main class is:
 
 ```
-pekko.diagnostics.ConfigChecker
+org.apache.pekko.diagnostics.ConfigChecker
 ```
 
 The configuration is loaded by the Typesafe Config library, i.e. `application.conf`

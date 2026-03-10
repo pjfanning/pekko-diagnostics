@@ -36,7 +36,7 @@ When this dependency is included the Starvation Detector is automatically run wh
 is started.
 
 You can create starvation detectors for other execution contexts than the main Pekko ActorSystem one as well.
-Use `com.github.pjfanning.diagnostics.StarvationDetector.checkExecutionContext` to create a starvation detector
+Use `org.apache.pekko.diagnostics.StarvationDetector.checkExecutionContext` to create a starvation detector
 for any `ExecutionContext` (though, it will not include stack trace information if the `ExecutionContext`
 is not an Pekko Dispatcher).
 
