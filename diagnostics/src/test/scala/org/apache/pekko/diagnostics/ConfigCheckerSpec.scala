@@ -91,7 +91,7 @@ class ConfigCheckerSpec extends PekkoSpec {
       checker.check().warnings should be(Nil)
     }
 
-    "find no warnings in akka-actor default configuration" in {
+    "find no warnings in pekko-actor default configuration" in {
       val checker = new ConfigChecker(extSys, reference, reference)
       checker.check().warnings should be(Nil)
     }

@@ -1,15 +1,15 @@
-# Akka Diagnostics
+# Pekko Diagnostics
 
-The Akka Thread Starvation Detector is a diagnostic tool that monitors the dispatcher of an ActorSystem and will log a warning if the dispatcher becomes unresponsive.
+The Pekko Thread Starvation Detector is a diagnostic tool that monitors the dispatcher of an ActorSystem and will log a warning if the dispatcher becomes unresponsive.
 The Config Checker tries to help you by finding potential configuration issues.
 
-[Akka](https://akka.io)
+[Pekko](https://pekko.apache.org)
 
 @@toc { depth=2 }
 
 @@@ index
 
-* [Akka Starvation Detector](starvation-detector.md)
+* [Pekko Starvation Detector](starvation-detector.md)
 * [Config Checker](config-checker.md)
 
 @@@

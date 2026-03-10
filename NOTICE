@@ -1,0 +1,10 @@
+Pekko Diagnostics
+
+This product includes software developed at
+The Apache Software Foundation (https://www.apache.org/).
+
+This product contains significant parts that were originally based on software from Lightbend (Akka <https://akka.io/>).
+Copyright (C) 2022 Lightbend Inc. <https://www.lightbend.com>
+
+Pekko Diagnostics is derived from Akka Diadnostics 2.0.0, which became availavle under the
+Apache Software License on 3 March 2023.
