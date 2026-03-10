@@ -437,9 +437,10 @@ class ConfigCheckerSpec extends PekkoSpec {
     }
 
     "find creating actor remotely while using cluster provider" in {
+      // Pekko default port is 7355, so using 7356 to avoid conflicts when running tests locally
       val c = ConfigFactory
         .parseString("""
-          |pekko.actor.deployment./sampleactor.remote = "pekko.tcp://sampleActorSystem@127.0.0.1:2553" """.stripMargin)
+          |pekko.actor.deployment./sampleactor.remote = "pekko.tcp://sampleActorSystem@127.0.0.1:7356" """.stripMargin)
         .withFallback(defaultCluster)
       val checker = new ConfigChecker(extSys, c, reference)
       val warnings = checker.check().warnings
