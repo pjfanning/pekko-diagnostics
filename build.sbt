@@ -20,8 +20,7 @@ inThisBuild(
       "Contributors",
       "https://github.com/pjfanning",
       url("https://github.com/pjfanning/pekko-diagnostics/graphs/contributors")),
-    licenses := Seq(
-      ("Apache-2.0", url("https://github.com/pjfanning/pekko-diagnostics/blob/main/LICENCE"))),
+    licenses := Seq(("Apache-2.0", url("https://github.com/pjfanning/pekko-diagnostics/blob/main/LICENCE"))),
     description := "Pekko diagnostics tools and utilities",
     // add snapshot repo when Pekko version overriden
     resolvers ++=
