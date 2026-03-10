@@ -14,7 +14,7 @@ inThisBuild(
       ScmInfo(
         url("https://github.com/pjfanning/pekko-diagnostics"),
         "https://github.com/pjfanning/pekko-diagnostics.git")),
-    startYear := Some(2022),
+    startYear := Some(2026),
     developers += Developer(
       "contributors",
       "Contributors",
@@ -24,7 +24,7 @@ inThisBuild(
       val tagOrBranch =
         if (version.value.endsWith("SNAPSHOT")) "main"
         else "v" + version.value
-      Seq(("BUSL-1.1", url(s"https://raw.githubusercontent.com/pjfanning/pekko-diagnostics/${tagOrBranch}/LICENSE")))
+      Seq(("Apache-2.0", url(s"https://raw.githubusercontent.com/pjfanning/pekko-diagnostics/${tagOrBranch}/LICENSE")))
     },
     description := "Pekko diagnostics tools and utilities",
     // add snapshot repo when Pekko version overriden
