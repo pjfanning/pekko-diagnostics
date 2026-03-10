@@ -89,10 +89,11 @@ lazy val root = (project in file("."))
   .enablePlugins(ScalaUnidocPlugin)
   .disablePlugins(SitePlugin)
   .settings(dontPublish)
-  .aggregate(`diagnostics`, docs)
+  .aggregate(`pekko-diagnostics`, docs)
 
-lazy val `diagnostics` = (project in file("diagnostics"))
+lazy val `pekko-diagnostics` = (project in file("diagnostics"))
   .settings(common)
+  .settings(name := "pekko-diagnostics")
   .settings(libraryDependencies ++= Dependencies.pekkoDiagnostics)
   .settings(AutomaticModuleName.settings("org.apache.pekko.diagnostics"))
 
