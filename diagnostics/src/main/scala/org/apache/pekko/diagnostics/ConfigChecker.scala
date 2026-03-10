@@ -503,9 +503,9 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     ifEnabled("actor-ref-provider") { checkerKey =>
       val path = "pekko.actor.provider"
       val supported = Set(
-        "pekko.actor.LocalActorRefProvider",
-        "pekko.remote.RemoteActorRefProvider",
-        "pekko.cluster.ClusterActorRefProvider",
+        "org.apache.pekko.actor.LocalActorRefProvider",
+        "org.apache.pekko.remote.RemoteActorRefProvider",
+        "org.apache.pekko.cluster.ClusterActorRefProvider",
         "local",
         "remote",
         "cluster")

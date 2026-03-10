@@ -25,7 +25,7 @@ class ConfigCheckerSpec extends PekkoSpec {
 
   val defaultRemote = ConfigFactory
     .parseString(s"""
-    pekko.actor.provider = pekko.remote.RemoteActorRefProvider
+    pekko.actor.provider = org.apache.pekko.remote.RemoteActorRefProvider
     # otherwise it will warn about undefined hostname
     pekko.remote.artery.canonical.hostname = 127.0.0.1
     pekko.remote.artery.tcp.hostname = 127.0.0.1
@@ -36,7 +36,7 @@ class ConfigCheckerSpec extends PekkoSpec {
 
   val defaultCluster = ConfigFactory
     .parseString(s"""
-    pekko.actor.provider = pekko.cluster.ClusterActorRefProvider
+    pekko.actor.provider = org.apache.pekko.cluster.ClusterActorRefProvider
     # otherwise it will warn about undefined hostname
     pekko.remote.artery.canonical.hostname = 127.0.0.1
     pekko.remote.artery.tcp.hostname = 127.0.0.1
