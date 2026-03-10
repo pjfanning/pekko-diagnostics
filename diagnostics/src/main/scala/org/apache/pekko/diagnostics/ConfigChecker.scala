@@ -599,7 +599,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
       val path = defaultDispatcherPath
       val dispatcherType = config.getString(path + ".type")
       if (dispatcherType == "PinnedDispatcher" ||
-        dispatcherType == "pekko.testkit.CallingThreadDispatcherConfigurator")
+        dispatcherType == "org.apache.pekko.testkit.CallingThreadDispatcherConfigurator")
         warn(
           checkerKey,
           path,
