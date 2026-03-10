@@ -297,8 +297,8 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     else {
       val w = new VectorBuilder[ConfigWarning]
       // stack of the path elements, ConfigUtil handles double-quote when needed, e.g. for
-      // akka.actor.serialization-bindings."java.io.Serializable"
-      // akka.actor.serialization-bindings."[B"
+      // pekko.actor.serialization-bindings."java.io.Serializable"
+      // pekko.actor.serialization-bindings."[B"
       // Using java.util.LinkedList because we use ConfigUtil to join these path elements.
       val pathList = new java.util.LinkedList[String]
 
@@ -331,11 +331,11 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
                   else if (inDeploymentSection && pathList.contains("pool-dispatcher"))
                     false
                   else if (inDeploymentSection)
-                    // For checking typos inside a `akka.actor.deployment."/user/foo/"` section remove those 4 path elements
+                    // For checking typos inside a `pekko.actor.deployment."/user/foo/"` section remove those 4 path elements
                     // and compare with the default deployment config.
                     !deploymentReference.hasPathOrNull(ConfigUtil.joinPath(pathList.subList(4, pathList.size)))
                   else if (inGrpcClientSection)
-                    // For checking typos inside a `akka.grpc.client."FooService"` section remove those 4 path elements
+                    // For checking typos inside a `pekko.grpc.client."FooService"` section remove those 4 path elements
                     // and compare with the fallback deployment config.
                     !grpcClientReference.hasPathOrNull(ConfigUtil.joinPath(pathList.subList(4, pathList.size)))
                   else

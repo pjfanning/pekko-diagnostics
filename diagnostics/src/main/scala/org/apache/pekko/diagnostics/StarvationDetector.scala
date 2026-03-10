@@ -147,7 +147,7 @@ object StarvationDetector {
 
   /**
    * Creates and runs a StarvationDetector thread for the dispatcher of the system's main dispatcher, i.e.
-   * akka.actor.default-dispatcher, with custom configuration.
+   * pekko.actor.default-dispatcher, with custom configuration.
    */
   def checkSystemDispatcher(provider: ClassicActorSystemProvider, config: StarvationDetectorSettings): Unit = {
     val system = provider.classicSystem
