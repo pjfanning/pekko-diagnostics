@@ -8,7 +8,7 @@ import java.net.InetAddress
 import java.util.Locale
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.immutable
 import scala.collection.immutable.VectorBuilder
 import scala.concurrent.duration._
@@ -213,7 +213,6 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   private val knownDispatcherPrefixes = Set("pekko.", "lagom.", "play.", "cassandra-plugin-", "kafka.")
 
   private val knownSettings = {
-    import scala.collection.JavaConverters._
     def collectLeaves(path: String, list: ConfigObject): Seq[(String, String)] =
       list
         .entrySet()

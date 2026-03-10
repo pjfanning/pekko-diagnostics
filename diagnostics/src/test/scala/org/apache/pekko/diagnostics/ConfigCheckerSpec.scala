@@ -15,7 +15,7 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
 import scala.annotation.nowarn
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.immutable
 import scala.util.Try
 
