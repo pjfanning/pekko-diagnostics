@@ -532,7 +532,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def dispatcherPoolSize(c: Config): Int = {
     val dispatcherType = c.getString("type")
-    if (dispatcherType == "PinnedDispatcher" || dispatcherType == "pekko.testkit.CallingThreadDispatcherConfigurator")
+    if (dispatcherType == "PinnedDispatcher" || dispatcherType == "org.apache.pekko.testkit.CallingThreadDispatcherConfigurator")
       1 // a PinnedDispatcher is not really size 1, but that is the best we can guess
     else if (c.getString("executor") == "thread-pool-executor") {
       val min = c.getInt("thread-pool-executor.core-pool-size-min")
