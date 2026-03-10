@@ -970,7 +970,7 @@ class ConfigCheckerSpec extends PekkoSpec {
         Vector(
           ConfigWarning(
             "typo",
-            """pekko.grpc.client."helloworld.GreeterService".poort is not a Pekko configuration setting. Did you mean one of 'pekko.remote.classic.netty.tcp.port', 'pekko.remote.classic.netty.ssl.port', 'pekko.remote.artery.bind.port'? Is it a typo or is it placed in the wrong section? Application specific properties should be placed outside the "pekko" config tree.""",
+            """pekko.grpc.client."helloworld.GreeterService".poort is not a Pekko configuration setting. Did you mean one of 'pekko.grpc.client.*.port', 'pekko.remote.artery.bind.port', 'pekko.remote.artery.canonical.port'? Is it a typo or is it placed in the wrong section? Application specific properties should be placed outside the "pekko" config tree.""",
             List("""pekko.grpc.client."helloworld.GreeterService".poort"""),
             List()),
           ConfigWarning(
