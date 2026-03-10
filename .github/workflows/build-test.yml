@@ -28,7 +28,7 @@ jobs:
         uses: coursier/cache-action@v6
 
       - name: Set up JDK 8
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v2
         with:
           jvm: temurin:1.8.0
 
@@ -63,7 +63,7 @@ jobs:
         uses: coursier/cache-action@v6
 
       - name: Set up JDK ${{ matrix.jdkVersion }}
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v2
         with:
           jvm: ${{ matrix.jvmName }}
 
@@ -92,7 +92,7 @@ jobs:
         uses: coursier/cache-action@v6
 
       - name: Set up JDK 17
-        uses: coursier/setup-action@v1
+        uses: coursier/setup-action@v2
         with:
           jvm: temurin:1.17.0
 
