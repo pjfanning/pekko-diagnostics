@@ -44,10 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { jdkVersion: "1.8.0",  jvmName: "temurin:1.8.0" }
-          - { jdkVersion: "1.11.0", jvmName: "temurin:1.11.0" }
-          - { jdkVersion: "1.17.0", jvmName: "temurin:1.17.0" }
+        javaVersion: [8, 11, 17]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -62,10 +59,11 @@ jobs:
       - name: Cache Coursier cache
         uses: coursier/cache-action@v8
 
-      - name: Set up JDK ${{ matrix.jdkVersion }}
+      - name: Set up JDK ${{ matrix.javaVersion }}
         uses: coursier/setup-action@v2
         with:
-          jvm: ${{ matrix.jvmName }}
+          distribution: temurin
+          java-version: ${{ matrix.javaVersion }}
 
       - name: sbt test
         run: |-
