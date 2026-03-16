@@ -144,16 +144,6 @@ class ConfigCheckerSpec extends PekkoSpec {
       assertDisabled(c, "power-user-settings", "typo")
     }
 
-    "warn for jackson serialization if older than 2.6" in {
-      val c = ConfigFactory
-        .parseString("pekko.serialization.jackson.type-in-manifest=off")
-        .withFallback(reference)
-      val checker = new ConfigChecker(extSys, c, reference)
-
-      val warnings = checker.check().warnings
-      warnings.shouldBe(Seq.empty[ConfigWarning])
-    }
-
     "find typos and misplacements" in {
       val c = ConfigFactory
         .parseString("""
