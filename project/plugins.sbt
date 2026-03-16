@@ -1,3 +1,6 @@
+// next line is needed by CopyrightHeader.scala
+libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.20.0"
+
 addSbtPlugin("com.github.sbt" % "sbt-header" % "5.11.0")
 addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.3")
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.3")
