@@ -210,7 +210,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   private val knownDispatcherTypes = Set("PinnedDispatcher", "Dispatcher")
   private val knownExecutorTypes =
     Set("default-executor", "fork-join-executor", "thread-pool-executor", "affinity-pool-executor")
-  private val knownDispatcherPrefixes = Set("pekko.", "lagom.", "play.", "cassandra-plugin-", "kafka.")
+  private val knownDispatcherPrefixes = Set("pekko.", "play.", "cassandra-plugin-", "kafka.")
 
   private val knownSettings = {
     import scala.collection.JavaConverters._
