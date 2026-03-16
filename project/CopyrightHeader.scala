@@ -21,18 +21,17 @@ object CopyrightHeader extends AutoPlugin {
   override lazy val requires = HeaderPlugin
   override lazy val trigger = allRequirements
 
-  override lazy val projectSettings = Def.settings(
-    Seq(Compile, Test).flatMap { config =>
-      inConfig(config)(
-        Seq(
-          headerLicense := Some(HeaderLicense.Custom(apacheHeader)),
-          headerMappings := headerMappings.value ++ Map(
-            HeaderFileType.scala -> cStyleComment,
-            HeaderFileType.java -> cStyleComment,
-            HeaderFileType.conf -> hashLineComment,
-            HeaderFileType("template") -> cStyleComment,
-            HeaderFileType("sbt") -> cStyleComment)))
-    })
+  override lazy val projectSettings = Def.settings(Seq(Compile, Test).flatMap { config =>
+    inConfig(config)(
+      Seq(
+        headerLicense := Some(HeaderLicense.Custom(apacheHeader)),
+        headerMappings := headerMappings.value ++ Map(
+          HeaderFileType.scala -> cStyleComment,
+          HeaderFileType.java -> cStyleComment,
+          HeaderFileType.conf -> hashLineComment,
+          HeaderFileType("template") -> cStyleComment,
+          HeaderFileType("sbt") -> cStyleComment)))
+  })
 
   val apacheFromAkkaSourceHeader: String =
     """Licensed to the Apache Software Foundation (ASF) under one or more
@@ -69,8 +68,8 @@ object CopyrightHeader extends AutoPlugin {
         case Some(currentText) if isValidCopyrightAnnotated(currentText) =>
           currentText
         case Some(currentText) if isOnlyLightbendOrEpflCopyrightAnnotated(currentText) =>
-          HeaderCommentStyle.cStyleBlockComment.commentCreator(apacheFromAkkaSourceHeader,
-            existingText) + NewLine * 2 + currentText
+          HeaderCommentStyle.cStyleBlockComment
+            .commentCreator(apacheFromAkkaSourceHeader, existingText) + NewLine * 2 + currentText
         case Some(currentText) =>
           throw new IllegalStateException(s"Unable to detect copyright for header: [$currentText]")
         case None =>
