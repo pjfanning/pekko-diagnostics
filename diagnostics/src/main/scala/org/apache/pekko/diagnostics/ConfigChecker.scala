@@ -491,12 +491,25 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkCore(): Vector[ConfigWarning] = {
     Vector.empty[ConfigWarning] ++
+    checkAkka() ++
     checkProvider() ++
     checkJvmExitOnFatalError() ++
     checkDefaultDispatcherSize() ++
     checkInternalDispatcherSize() ++
     checkDefaultDispatcherType() ++
     checkDispatcherThroughput(defaultDispatcherPath, config.getConfig(defaultDispatcherPath))
+  }
+
+  private def checkAkka(): List[ConfigWarning] = {
+    ifEnabled("akka") { checkerKey =>
+      val path = "akka"
+      if (reference.hasPath("akka"))
+        warn(checkerKey, path, "Akka configuration found in a reference.conf file, remove Akka dependencies.")
+      else if (config.hasPath(path))
+        warn(checkerKey, path, "Akka configuration found in configuration file, migrate config to Pekko.")
+      else
+        Nil
+    }
   }
 
   private def checkProvider(): List[ConfigWarning] =
