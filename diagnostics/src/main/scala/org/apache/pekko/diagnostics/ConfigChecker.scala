@@ -1,4 +1,13 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * license agreements; and to You under the Apache License, version 2.0:
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * This file is part of the Apache Pekko project, which was derived from Akka.
+ */
+
+/*
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
@@ -210,7 +219,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   private val knownDispatcherTypes = Set("PinnedDispatcher", "Dispatcher")
   private val knownExecutorTypes =
     Set("default-executor", "fork-join-executor", "thread-pool-executor", "affinity-pool-executor")
-  private val knownDispatcherPrefixes = Set("pekko.", "lagom.", "play.", "cassandra-plugin-", "kafka.")
+  private val knownDispatcherPrefixes = Set("pekko.", "play.", "cassandra-plugin-", "kafka.")
 
   private val knownSettings = {
     import scala.collection.JavaConverters._
@@ -491,12 +500,25 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def checkCore(): Vector[ConfigWarning] = {
     Vector.empty[ConfigWarning] ++
+    checkAkka() ++
     checkProvider() ++
     checkJvmExitOnFatalError() ++
     checkDefaultDispatcherSize() ++
     checkInternalDispatcherSize() ++
     checkDefaultDispatcherType() ++
     checkDispatcherThroughput(defaultDispatcherPath, config.getConfig(defaultDispatcherPath))
+  }
+
+  private def checkAkka(): List[ConfigWarning] = {
+    ifEnabled("akka") { checkerKey =>
+      val path = "akka"
+      if (reference.hasPath("akka"))
+        warn(checkerKey, path, "Akka configuration found in a reference.conf file, remove Akka dependencies.")
+      else if (config.hasPath(path))
+        warn(checkerKey, path, "Akka configuration found in configuration file, migrate config to Pekko.")
+      else
+        Nil
+    }
   }
 
   private def checkProvider(): List[ConfigWarning] =

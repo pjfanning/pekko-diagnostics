@@ -20,13 +20,13 @@ inThisBuild(
       "Contributors",
       "https://github.com/pjfanning",
       url("https://github.com/pjfanning/pekko-diagnostics/graphs/contributors")),
-    licenses := Seq(("Apache-2.0", url("https://github.com/pjfanning/pekko-diagnostics/blob/main/LICENCE"))),
     description := "Pekko diagnostics tools and utilities",
     // add snapshot repo when Pekko version overriden
     resolvers ++=
       (if (System.getProperty("override.pekko.version") != null)
          Seq("Apache Snapshots".at("https://repository.apache.org/content/repositories/snapshots/"))
-       else Seq.empty)))
+       else Seq.empty),
+    apacheSonatypeProjectProfile := "pekko"))
 
 lazy val common: Seq[Setting[_]] =
   Seq(

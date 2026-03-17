@@ -1,4 +1,13 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * license agreements; and to You under the Apache License, version 2.0:
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * This file is part of the Apache Pekko project, which was derived from Akka.
+ */
+
+/*
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
@@ -11,9 +20,8 @@ import org.apache.pekko.persistence.testkit.PersistenceTestKitDurableStateStoreP
 import org.apache.pekko.persistence.testkit.PersistenceTestKitPlugin
 import org.apache.pekko.persistence.testkit.PersistenceTestKitSnapshotPlugin
 import org.apache.pekko.testkit.EventFilter
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
 
+import com.typesafe.config.{ Config, ConfigFactory, ConfigValueFactory }
 import scala.annotation.nowarn
 import scala.collection.JavaConverters._
 import scala.collection.immutable
@@ -76,7 +84,6 @@ class ConfigCheckerSpec extends PekkoSpec {
   }
 
   "The ConfigChecker" must {
-
     "find no warnings in PersistenceTestKitPlugin.scala configuration" in {
       val c = PersistenceTestKitPlugin.config
         .withFallback(PersistenceTestKitSnapshotPlugin.config)
@@ -142,6 +149,28 @@ class ConfigCheckerSpec extends PekkoSpec {
         "pekko.actor.router.type-mapping.added")
 
       assertDisabled(c, "power-user-settings", "typo")
+    }
+
+    "warn for akka in config" in {
+      val c = ConfigFactory
+        .parseString("akka {}")
+        .withFallback(reference)
+      val checker = new ConfigChecker(extSys, c, reference)
+
+      val warnings = checker.check().warnings
+      assertCheckerKey(warnings, "akka")
+      warnings.head.message shouldBe "Akka configuration found in configuration file, migrate config to Pekko."
+    }
+
+    "warn for akka in reference.conf" in {
+      val c = ConfigFactory
+        .empty()
+        .withFallback(reference)
+      val checker = new ConfigChecker(extSys, c, reference.withValue("akka", ConfigValueFactory.fromAnyRef("{}")))
+
+      val warnings = checker.check().warnings
+      assertCheckerKey(warnings, "akka")
+      warnings.head.message shouldBe "Akka configuration found in a reference.conf file, remove Akka dependencies."
     }
 
     "find typos and misplacements" in {

@@ -1,4 +1,13 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * license agreements; and to You under the Apache License, version 2.0:
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * This file is part of the Apache Pekko project, which was derived from Akka.
+ */
+
+/*
  * Copyright (C) 2023 Lightbend Inc. <https://www.lightbend.com>
  */
 
@@ -466,7 +475,7 @@ object StarvationDetector {
         "Thread.sleep",
         "Thread.sleep blocks a thread. Use system.scheduler.scheduleOnce or org.apache.pekko.pattern.after to continue processing asynchronously after a delay.",
         None,
-        topFrameIs(classMethod("java.lang.Thread.sleep"))),
+        anyFrameIs(classMethod("java.lang.Thread.sleep"))),
       Problem(
         "Await",
         "Await.ready / Await.result blocks a thread. Use Future.map and other combinators to continue processing asynchronously after a Future is completed.",
