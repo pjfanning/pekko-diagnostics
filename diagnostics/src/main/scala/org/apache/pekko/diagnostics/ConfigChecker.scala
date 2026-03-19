@@ -323,7 +323,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
       def checkConfigObject(obj: ConfigObject): Unit = {
         val iter = obj.entrySet().iterator()
-        while (iter.hasNext()) {
+        while (iter.hasNext) {
           val entry = iter.next()
           entry.getValue match {
             case o: ConfigObject =>
@@ -414,7 +414,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
     def find(obj: ConfigObject): Unit = {
       val iter = obj.entrySet().iterator()
-      while (iter.hasNext()) {
+      while (iter.hasNext) {
         val entry = iter.next()
         entry.getValue match {
           case o: ConfigObject =>
@@ -465,7 +465,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
       def checkConfigObject(obj: ConfigObject): Unit = {
         val iter = obj.entrySet().iterator()
-        while (iter.hasNext()) {
+        while (iter.hasNext) {
           val entry = iter.next()
           entry.getValue match {
             case o: ConfigObject =>
