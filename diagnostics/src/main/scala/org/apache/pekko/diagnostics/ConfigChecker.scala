@@ -175,7 +175,7 @@ object ConfigChecker {
 }
 
 /**
- * The `ConfigChecker will try to find potential configuration issues. It is run when the actor system is started. It
+ * The `ConfigChecker` will try to find potential configuration issues. It is run when the actor system is started. It
  * also possible to run it as a Java main program, see [[ConfigChecker#main]].
  *
  * Detailed documentation can be found in the `pekko.diagnostics.checker` section of the reference.conf and in the
@@ -276,7 +276,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def warn(checkerKey: String, paths: List[String], message: String): List[ConfigWarning] = {
     val properties = paths.map(p => tryGetStringProperty(config, p).getOrElse(p))
-    val defaults = paths.map(p => tryGetStringProperty(reference, p)).flatten
+    val defaults = paths.flatMap(p => tryGetStringProperty(reference, p))
     List(ConfigWarning(checkerKey, message, properties, defaults))
   }
 
@@ -323,7 +323,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
       def checkConfigObject(obj: ConfigObject): Unit = {
         val iter = obj.entrySet().iterator()
-        while (iter.hasNext()) {
+        while (iter.hasNext) {
           val entry = iter.next()
           entry.getValue match {
             case o: ConfigObject =>
@@ -355,7 +355,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
                     if (similarItems.nonEmpty) s" Did you mean one of ${similarItems.map(p => s"'$p'").mkString(", ")}?"
                     else ""
 
-                  w += new ConfigWarning(
+                  w += ConfigWarning(
                     typoCheckKey,
                     s"$p is not a Pekko configuration setting.$didYouMeanSentence Is it a typo or is it placed in the wrong section? " +
                     """Application specific properties should be placed outside the "pekko" config tree.""",
@@ -400,7 +400,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     // Using java.util.LinkedList because we use ConfigUtil to join these path elements.
     val pathList = new java.util.LinkedList[String]
 
-    def isADispatherBlock(c: Config): Boolean = {
+    def isADispatcherBlock(c: Config): Boolean = {
       def hasKnownDispatcherType =
         c.stringValue("type").exists(knownDispatcherTypes)
 
@@ -414,13 +414,13 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
     def find(obj: ConfigObject): Unit = {
       val iter = obj.entrySet().iterator()
-      while (iter.hasNext()) {
+      while (iter.hasNext) {
         val entry = iter.next()
         entry.getValue match {
           case o: ConfigObject =>
             val c = o.toConfig
             pathList.add(entry.getKey)
-            if (isADispatherBlock(c)) {
+            if (isADispatcherBlock(c)) {
               result += ConfigUtil.joinPath(pathList) -> c
               pathList.removeLast()
             } else
@@ -465,7 +465,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
       def checkConfigObject(obj: ConfigObject): Unit = {
         val iter = obj.entrySet().iterator()
-        while (iter.hasNext()) {
+        while (iter.hasNext) {
           val entry = iter.next()
           entry.getValue match {
             case o: ConfigObject =>
@@ -476,7 +476,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
               val p = ConfigUtil.joinPath(pathList)
               val fullPath = path + "." + p
               if (!disabledTypoSections.exists(fullPath.startsWith) && !defaultDispatcherReference.hasPath(p)) {
-                w += new ConfigWarning(
+                w += ConfigWarning(
                   "typo",
                   s"$fullPath is not a Pekko dispatcher configuration setting. Is it a typo or is it placed in the wrong section? " +
                   s"If this is not a dispatcher setting you may disable this check by adding [$fullPath] to configuration string list " +
@@ -884,7 +884,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
         .entrySet()
         .iterator()
         .asScala
-        .exists(_.getKey.matches("""^\"\/.*\"\.remote""")) // is of the type "/...".remote
+        .exists(_.getKey.matches("""^"/.*"\.remote""")) // is of the type "/...".remote
       if (isRemoteDeployment)
         warn(
           checkerKey,

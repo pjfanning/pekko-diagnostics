@@ -703,7 +703,7 @@ class ConfigCheckerSpec extends PekkoSpec {
     }
 
     "not check SBR if reference.conf doesn't contain split-brain-resolver section" in {
-      // akka-split-brain-resolver is in classpath and in this test we want to simulate that it wasn't
+      // split-brain-resolver is in classpath and in this test we want to simulate that it wasn't
       val referenceWithoutSbr = ConfigFactory.defaultReference().withoutPath("pekko.cluster.split-brain-resolver")
       val clusterWithoutSbr = defaultCluster.withoutPath("pekko.cluster.split-brain-resolver")
 
@@ -713,7 +713,7 @@ class ConfigCheckerSpec extends PekkoSpec {
     }
 
     "not check SBR if reference.conf doesn't contain split-brain-resolver section, even if included in application.conf" in {
-      // akka-split-brain-resolver is in classpath and in this test we want to simulate that it wasn't
+      // split-brain-resolver is in classpath and in this test we want to simulate that it wasn't
       val referenceWithoutSbr = ConfigFactory.defaultReference().withoutPath("pekko.cluster.split-brain-resolver")
       val clusterWithoutSbr = defaultCluster.withoutPath("pekko.cluster.split-brain-resolver")
       val c = ConfigFactory
@@ -935,7 +935,7 @@ class ConfigCheckerSpec extends PekkoSpec {
     }
 
     "not warn about HTTP server, client and pool specific parsing overrides" in {
-      // these are brought in through some trix in akka-http
+      // these are brought in through some trix in pekko-http
       val config = ConfigFactory
         .parseString("""
           pekko.http.server.parsing.illegal-header-warnings = on
