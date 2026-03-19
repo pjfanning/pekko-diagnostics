@@ -159,12 +159,8 @@ abstract class PekkoSpec(_system: ActorSystem)
 
   // for ScalaTest === compare of Class objects
   implicit def classEqualityConstraint[A, B]: CanEqual[Class[A], Class[B]] =
-    new CanEqual[Class[A], Class[B]] {
-      def areEqual(a: Class[A], b: Class[B]) = a == b
-    }
+    (a: Class[A], b: Class[B]) => a == b
 
   implicit def setEqualityConstraint[A, T <: Set[_ <: A]]: CanEqual[Set[A], T] =
-    new CanEqual[Set[A], T] {
-      def areEqual(a: Set[A], b: T) = a == b
-    }
+    (a: Set[A], b: T) => a == b
 }
