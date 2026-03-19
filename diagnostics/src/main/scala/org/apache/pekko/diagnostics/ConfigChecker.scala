@@ -355,7 +355,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
                     if (similarItems.nonEmpty) s" Did you mean one of ${similarItems.map(p => s"'$p'").mkString(", ")}?"
                     else ""
 
-                  w += new ConfigWarning(
+                  w += ConfigWarning(
                     typoCheckKey,
                     s"$p is not a Pekko configuration setting.$didYouMeanSentence Is it a typo or is it placed in the wrong section? " +
                     """Application specific properties should be placed outside the "pekko" config tree.""",
@@ -476,7 +476,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
               val p = ConfigUtil.joinPath(pathList)
               val fullPath = path + "." + p
               if (!disabledTypoSections.exists(fullPath.startsWith) && !defaultDispatcherReference.hasPath(p)) {
-                w += new ConfigWarning(
+                w += ConfigWarning(
                   "typo",
                   s"$fullPath is not a Pekko dispatcher configuration setting. Is it a typo or is it placed in the wrong section? " +
                   s"If this is not a dispatcher setting you may disable this check by adding [$fullPath] to configuration string list " +
