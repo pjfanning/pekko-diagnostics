@@ -884,7 +884,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
         .entrySet()
         .iterator()
         .asScala
-        .exists(_.getKey.matches("""^\"\/.*\"\.remote""")) // is of the type "/...".remote
+        .exists(_.getKey.matches("""^"/.*"\.remote""")) // is of the type "/...".remote
       if (isRemoteDeployment)
         warn(
           checkerKey,
