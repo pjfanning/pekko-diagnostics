@@ -175,7 +175,7 @@ object ConfigChecker {
 }
 
 /**
- * The `ConfigChecker will try to find potential configuration issues. It is run when the actor system is started. It
+ * The `ConfigChecker` will try to find potential configuration issues. It is run when the actor system is started. It
  * also possible to run it as a Java main program, see [[ConfigChecker#main]].
  *
  * Detailed documentation can be found in the `pekko.diagnostics.checker` section of the reference.conf and in the
