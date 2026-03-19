@@ -338,7 +338,7 @@ object StarvationDetector {
           // with other periodic tasks on the dispatcher which can lead to false results. In other words,
           // when we reach here we know the latest starvation detector task just finished, i.e. it just got a slot for
           // execution. If the check interval is an integer factor or multiple of one of the periodic tasks
-          // that run on this dispatcher (e.g. Akka scheduler granularity is 100ms, check interval is 1 second)
+          // that run on this dispatcher (e.g. Pekko scheduler granularity is 100ms, check interval is 1 second)
           // we might now accidentally schedule the next execution directly into a free(ish) time slot.
           val jitter = (checkIntervalNanos / 100 * (random.nextDouble() - 0.5)).toLong
           LockSupport.parkNanos(checkIntervalNanos + jitter)
@@ -399,7 +399,7 @@ object StarvationDetector {
         threadStacks
           .map(
             _.mapTrace(_.takeWhile(!_.getClassName.endsWith("TaskInvocation")))
-          ) // TaskInvocation.run is the last frame belonging to Akka's scheduler impl
+          ) // TaskInvocation.run is the last frame belonging to Pekko's scheduler impl
 
       val filteredStacksWithoutEmpty =
         allStacks

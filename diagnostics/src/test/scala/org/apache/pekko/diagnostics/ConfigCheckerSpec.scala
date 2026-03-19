@@ -935,7 +935,7 @@ class ConfigCheckerSpec extends PekkoSpec {
     }
 
     "not warn about HTTP server, client and pool specific parsing overrides" in {
-      // these are brought in through some trix in akka-http
+      // these are brought in through some trix in pekko-http
       val config = ConfigFactory
         .parseString("""
           pekko.http.server.parsing.illegal-header-warnings = on
