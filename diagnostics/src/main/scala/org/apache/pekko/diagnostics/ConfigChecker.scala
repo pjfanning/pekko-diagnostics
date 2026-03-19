@@ -400,7 +400,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     // Using java.util.LinkedList because we use ConfigUtil to join these path elements.
     val pathList = new java.util.LinkedList[String]
 
-    def isADispatherBlock(c: Config): Boolean = {
+    def isADispatcherBlock(c: Config): Boolean = {
       def hasKnownDispatcherType =
         c.stringValue("type").exists(knownDispatcherTypes)
 
@@ -420,7 +420,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
           case o: ConfigObject =>
             val c = o.toConfig
             pathList.add(entry.getKey)
-            if (isADispatherBlock(c)) {
+            if (isADispatcherBlock(c)) {
               result += ConfigUtil.joinPath(pathList) -> c
               pathList.removeLast()
             } else
