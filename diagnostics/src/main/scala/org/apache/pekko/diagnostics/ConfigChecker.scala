@@ -276,7 +276,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
   private def warn(checkerKey: String, paths: List[String], message: String): List[ConfigWarning] = {
     val properties = paths.map(p => tryGetStringProperty(config, p).getOrElse(p))
-    val defaults = paths.map(p => tryGetStringProperty(reference, p)).flatten
+    val defaults = paths.flatMap(p => tryGetStringProperty(reference, p))
     List(ConfigWarning(checkerKey, message, properties, defaults))
   }
 
