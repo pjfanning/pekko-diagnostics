@@ -266,10 +266,10 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   private def similar(name: String): Seq[String] =
     knownSettings
       .map { case (key, path) =>
-        (key, path, levenshteinDistance(key, name))
+        (levenshteinDistance(key, name), path)
       }
-      .filter(_._3 <= maxSimilarDistance)
-      .sortBy(_._3)
+      .filter(_._1 <= maxSimilarDistance)
+      .sorted
       .take(maxSimilarItems)
       .map(_._2)
 
