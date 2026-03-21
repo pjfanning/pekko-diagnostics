@@ -27,15 +27,13 @@ object Dependencies {
     val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
     val pekkoPersistenceTestKit = "org.apache.pekko" %% "pekko-persistence-testkit" % PekkoVersion
     val pekkoTestKit = "org.apache.pekko" %% "pekko-testkit" % PekkoVersion
-    val junit = "junit" % "junit" % "4.13.2" // Common Public License 1.0
     val all = Seq(
       pekkoRemoting % Test,
       pekkoClusterMetrics % Test,
       pekkoStreamTestKit % Test,
       pekkoPersistenceTestKit % Test,
       pekkoTestKit % Test,
-      scalaTest % Test, // ApacheV2
-      junit % Test // Common Public License 1.0
+      scalaTest % Test // ApacheV2
     )
   }
 
