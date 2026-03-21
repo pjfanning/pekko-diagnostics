@@ -59,9 +59,6 @@ lazy val common: Seq[Setting[_]] =
     Test / parallelExecution := false,
     // show full stack traces and test case durations
     Test / testOptions += Tests.Argument("-oDF"),
-    // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
-    // -a Show stack traces and exception class name for AssertionErrors.
-    testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
     Test / fork := true, // some non-heap memory is leaking
     Test / javaOptions ++= {
       import scala.collection.JavaConverters._
