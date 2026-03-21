@@ -14,8 +14,6 @@ object Dependencies {
   val PekkoHttpVersionInDocs = "1.1.0"
   val ScalaTestVersion = "3.2.19"
 
-  val commonsText = "org.apache.commons" % "commons-text" % "1.15.0" // ApacheV2
-
   object Compile {
     val pekkoActor = "org.apache.pekko" %% "pekko-actor" % PekkoVersion
   }
@@ -41,7 +39,5 @@ object Dependencies {
 
   import Compile._
 
-  val pekkoDiagnostics = Seq(
-    commonsText, // for levenshtein distance impl
-    pekkoActor) ++ TestDeps.all
+  val pekkoDiagnostics = Seq(pekkoActor) ++ TestDeps.all
 }

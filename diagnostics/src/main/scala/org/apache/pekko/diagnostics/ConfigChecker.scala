@@ -31,7 +31,6 @@ import org.apache.pekko.actor.ExtendedActorSystem
 import org.apache.pekko.dispatch.ThreadPoolConfig
 import org.apache.pekko.event.Logging
 import com.typesafe.config._
-import org.apache.commons.text.similarity.LevenshteinDistance
 
 object ConfigChecker {
 
@@ -238,15 +237,38 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     collectLeaves("pekko", reference.getConfig("pekko").root)
   }
 
+  // based on the pseudocode at https://en.wikipedia.org/wiki/Levenshtein_distance
+  def levenshteinDistance(a: String, b: String): Int = {
+    val d = Array.ofDim[Int](a.length + 1, b.length + 1)
+
+    for (i <- 0 to a.length)
+      d(i)(0) = i
+    for (j <- 0 to b.length)
+      d(0)(j) = j
+
+    for {
+      i <- 1 to a.length
+      j <- 1 to b.length
+    } {
+      d(i)(j) = math.min(
+        math.min(
+          d(i - 1)(j) + 1, // deletion
+          d(i)(j - 1) + 1 // insertion
+        ),
+        d(i - 1)(j - 1) + (if (a(i - 1) == b(j - 1)) 0 else 1) // substitution
+      )
+    }
+    d(a.length)(b.length)
+  }
+
   private val maxSimilarDistance = 5
   private val maxSimilarItems = 3
-  private lazy val levenshteinDistance = new LevenshteinDistance(maxSimilarDistance)
   private def similar(name: String): Seq[String] =
     knownSettings
       .map { case (key, path) =>
-        (key, path, levenshteinDistance.apply(key, name))
+        (key, path, levenshteinDistance(key, name))
       }
-      .filter(_._3 >= 0)
+      .filter(_._3 <= maxSimilarDistance)
       .sortBy(_._3)
       .take(maxSimilarItems)
       .map(_._2)
@@ -351,6 +373,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
                     !reference.hasPathOrNull(p)
                 if (isTypo) {
                   val similarItems = similar(entry.getKey)
+                  println(similarItems)
                   val didYouMeanSentence =
                     if (similarItems.nonEmpty) s" Did you mean one of ${similarItems.map(p => s"'$p'").mkString(", ")}?"
                     else ""
