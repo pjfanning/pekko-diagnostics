@@ -1009,5 +1009,19 @@ class ConfigCheckerSpec extends PekkoSpec {
             List())))
     }
 
+    "warn without 'one of'" in {
+      val config = ConfigFactory
+        .parseString("pekko.actor.serializemessages = on")
+        .withFallback(reference)
+      val checker = new ConfigChecker(extSys, config, reference)
+      val warnings = checker.check().warnings
+
+      warnings should be(
+        Vector(ConfigWarning(
+          "typo",
+          """pekko.actor.serializemessages is not a Pekko configuration setting. Did you mean 'pekko.actor.serialize-messages'? Is it a typo or is it placed in the wrong section? Application specific properties should be placed outside the "pekko" config tree.""",
+          List("pekko.actor.serializemessages"),
+          List())))
+    }
   }
 }

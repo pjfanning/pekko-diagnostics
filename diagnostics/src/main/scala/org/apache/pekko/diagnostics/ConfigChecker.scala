@@ -352,7 +352,10 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
                 if (isTypo) {
                   val similarItems = similar(entry.getKey)
                   val didYouMeanSentence =
-                    if (similarItems.nonEmpty) s" Did you mean one of ${similarItems.map(p => s"'$p'").mkString(", ")}?"
+                    if (similarItems.length > 1)
+                      s" Did you mean one of ${similarItems.map(p => s"'$p'").mkString(", ")}?"
+                    else if (similarItems.nonEmpty)
+                      s" Did you mean '${similarItems.head}'?"
                     else ""
 
                   w += ConfigWarning(
