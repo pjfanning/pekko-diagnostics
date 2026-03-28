@@ -40,9 +40,7 @@ lazy val common: Seq[Setting[_]] =
     Compile / javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8"),
     scalacOptions ++= {
       var scalacOptionsBase = Seq("-encoding", "UTF-8", "-feature", "-unchecked", "-deprecation")
-      if (scalaVersion.value == Dependencies.Scala212)
-        scalacOptionsBase ++: Seq("-Xfuture", "-Xfatal-warnings", "-Xlint", "-Ywarn-dead-code")
-      else if (scalaVersion.value == Dependencies.Scala213)
+      if (scalaVersion.value == Dependencies.Scala213)
         scalacOptionsBase ++: Seq("-Xfatal-warnings", "-Xlint", "-Ywarn-dead-code", "-Wconf:cat=deprecation:info")
       else
         scalacOptionsBase
@@ -52,7 +50,7 @@ lazy val common: Seq[Setting[_]] =
       else Seq("--release", "8")
     ),
     scalacOptions ++= (
-      if (isJdk8 || scalaVersion.value == Dependencies.Scala212) Seq.empty
+      if (isJdk8) Seq.empty
       else Seq("--release", "8")
     ),
     Test / logBuffered := false,
