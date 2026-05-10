@@ -24,7 +24,7 @@ inThisBuild(
     Test / publishArtifact := false,
     pomIncludeRepository := (_ => false),
     publishMavenStyle := true,
-    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")))
+    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))))
 
 lazy val common: Seq[Setting[_]] =
   Seq(
