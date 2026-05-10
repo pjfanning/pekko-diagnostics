@@ -20,7 +20,11 @@ inThisBuild(
       "Contributors",
       "https://github.com/pjfanning",
       url("https://github.com/pjfanning/pekko-diagnostics/graphs/contributors")),
-    description := "Pekko diagnostics tools and utilities"))
+    description := "Pekko diagnostics tools and utilities",
+    Test / publishArtifact := false,
+    pomIncludeRepository := (_ => false),
+    publishMavenStyle := true,
+    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")))
 
 lazy val common: Seq[Setting[_]] =
   Seq(
