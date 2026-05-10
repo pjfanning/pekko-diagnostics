@@ -12,7 +12,7 @@ object Dependencies {
   val PekkoVersion = "1.1.5"
   val PekkoVersionInDocs = PekkoVersion.take(3)
   val PekkoHttpVersionInDocs = "1.1.0"
-  val ScalaTestVersion = "3.2.19"
+  val ScalaTestVersion = "3.2.20"
 
   val commonsText = "org.apache.commons" % "commons-text" % "1.15.0" // ApacheV2
 
