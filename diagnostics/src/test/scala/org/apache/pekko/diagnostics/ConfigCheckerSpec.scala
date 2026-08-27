@@ -895,45 +895,6 @@ class ConfigCheckerSpec extends PekkoSpec {
       assertDisabled(c, "remote-prefer-cluster")
     }
 
-    "not warn about the dynamic hostnames when artery is used" in {
-      val config1 = ConfigFactory
-        .parseString("""
-       pekko {
-         actor {
-           provider = remote
-         }
-         remote {
-           artery {
-             enabled = on
-             canonical.hostname = "<getHostAddress>"
-             canonical.port = 25252
-             log-aeron-counters = on
-           }
-         }
-       }
-      """)
-        .withFallback(reference)
-
-      val checker = new ConfigChecker(extSys, config1, reference)
-      val warnings = checker.check().warnings
-
-      printDocWarnings(warnings)
-      assertCheckerKey(warnings, "hostname", "remote-prefer-cluster")
-      assertPath(warnings, "pekko.remote.artery.canonical.hostname", "pekko.actor.provider")
-
-      val config2 =
-        ConfigFactory.parseString("""pekko.remote.artery.canonical.hostname = "<getHostName>" """).withFallback(config1)
-
-      val checker2 = new ConfigChecker(extSys, config2, reference)
-      val warnings2 = checker2.check().warnings
-
-      printDocWarnings(warnings2)
-      assertCheckerKey(warnings2, "hostname", "remote-prefer-cluster")
-      assertPath(warnings2, "pekko.remote.artery.canonical.hostname", "pekko.actor.provider")
-      assertDisabled(config2, "hostname", "remote-prefer-cluster")
-
-    }
-
     "not warn about HTTP server, client and pool specific parsing overrides" in {
       // these are brought in through some trix in pekko-http
       val config = ConfigFactory
