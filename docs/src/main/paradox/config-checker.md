@@ -56,19 +56,6 @@ if there are any issues.
 pekko.diagnostics.checker.fail-on-warning = on
 ```
 
-## Pekko Management Integration
-
-When using Pekko Management the config checker can be accessed through the Pekko Management HTTP endpoint at `/diagnostics/config-check` if 
-`pekko.diagnostics.management.enabled` is set to `true` (default is `false`).
-
-@@@ warning
-
-Note that you should make sure your Pekko Management endpoint
-is properly secured with HTTPS and authentication before enabling this as it may leak potentially sensitive details
-about the system or potentially be used for a DoS attack.
-
-@@@
-
 ## Typos and misplacements
 
 An annoying mistake is to use wrong spelling for a setting or place it in the wrong

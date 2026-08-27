@@ -183,9 +183,36 @@ object StarvationDetector {
    * nothing.
    */
   def checkInternalDispatcher(provider: ClassicActorSystemProvider, config: StarvationDetectorSettings): Unit = {
+    checkDispatcher(provider, "pekko.actor.internal-dispatcher", config)
+  }
+
+  /**
+   * Creates and runs a StarvationDetector thread for the given Pekko dispatcher defined in config with the
+   * `dispatcherConfigPath`.
+   *
+   * Note that a dispatcher will only have one StarvationDetector for it active at a time. If there is another
+   * StarvationDetector running, this method does nothing.
+   */
+  def checkDispatcher(provider: ClassicActorSystemProvider, dispatcherConfigPath: String): Unit =
+    checkDispatcher(
+      provider,
+      dispatcherConfigPath,
+      StarvationDetectorSettings.fromConfig(
+        provider.classicSystem.settings.config.getConfig("pekko.diagnostics.starvation-detector")))
+
+  /**
+   * Creates and runs a StarvationDetector thread for the given Pekko dispatcher defined in config with the
+   * `dispatcherConfigPath`.
+   *
+   * Note that a dispatcher will only have one StarvationDetector for it active at a time. If there is another
+   * StarvationDetector running, this method does nothing.
+   */
+  def checkDispatcher(
+      provider: ClassicActorSystemProvider,
+      dispatcherConfigPath: String,
+      config: StarvationDetectorSettings): Unit = {
     val system = provider.classicSystem
-    val internalDispatcherPath = "pekko.actor.internal-dispatcher"
-    val dispatcher = system.dispatchers.lookup(internalDispatcherPath)
+    val dispatcher = system.dispatchers.lookup(dispatcherConfigPath)
     checkExecutionContext(
       dispatcher,
       Logging(system, classOf[StarvationDetectorThread]),
