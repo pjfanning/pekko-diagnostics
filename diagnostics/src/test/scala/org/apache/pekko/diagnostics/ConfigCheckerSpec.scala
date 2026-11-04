@@ -22,7 +22,6 @@ import org.apache.pekko.persistence.testkit.PersistenceTestKitSnapshotPlugin
 import org.apache.pekko.testkit.EventFilter
 
 import com.typesafe.config.{ Config, ConfigFactory, ConfigValueFactory }
-import scala.annotation.nowarn
 import scala.collection.JavaConverters._
 import scala.collection.immutable
 import scala.util.Try
@@ -920,18 +919,19 @@ class ConfigCheckerSpec extends PekkoSpec {
       warnings should be(Vector.empty)
     }
 
-    @nowarn("msg=possible missing interpolator")
     val defaultGrpc = ConfigFactory.parseString("""
       pekko.grpc.client."*" {
         host = ""
         port = 0
-        ssl-config = ${ssl-config}
+        service-discovery {
+          mechanism = "static"
+        }
       }
     """)
 
     "not warn about paths with quotes" in {
       val config = ConfigFactory
-        .parseString("""pekko.grpc.client."*".ssl-config.protocol = "TLSv1.3"""")
+        .parseString("""pekko.grpc.client."*".service-discovery.mechanism = "config"""")
         .withFallback(reference)
       val referenceWithGrpc = reference.withFallback(defaultGrpc).resolve
       val checker = new ConfigChecker(extSys, config, referenceWithGrpc)

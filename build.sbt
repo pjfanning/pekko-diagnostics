@@ -1,13 +1,10 @@
 GlobalScope / parallelExecution := false
 Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
 
-val specificationVersion: String = sys.props("java.specification.version")
-val isJdk17orHigher: Boolean =
-  VersionNumber(specificationVersion).matchesSemVer(SemanticSelector(">=17"))
-
 inThisBuild(
   Seq(
     organization := "com.github.pjfanning",
+    resolvers += "Apache Staging".at("https://repository.apache.org/content/groups/staging"),
     organizationName := "pjfanning",
     homepage := Some(url("https://github.com/pjfanning/pekko-diagnostics")),
     scmInfo := Some(
@@ -38,21 +35,13 @@ lazy val common: Seq[Setting[_]] =
     Compile / javacOptions ++= Seq("-encoding", "UTF-8"),
     scalacOptions ++= {
       var scalacOptionsBase = Seq("-encoding", "UTF-8", "-feature", "-unchecked", "-deprecation")
-      if (scalaVersion.value == Dependencies.Scala212)
-        scalacOptionsBase ++: Seq("-Xfuture", "-Xfatal-warnings", "-Xlint", "-Ywarn-dead-code")
-      else if (scalaVersion.value == Dependencies.Scala213)
+      if (scalaVersion.value == Dependencies.Scala213)
         scalacOptionsBase ++: Seq("-Xfatal-warnings", "-Xlint", "-Ywarn-dead-code", "-Wconf:cat=deprecation:info")
       else
         scalacOptionsBase
     },
-    javacOptions ++= (
-      if (isJdk8) Seq.empty
-      else Seq("--release", "8")
-    ),
-    scalacOptions ++= (
-      if (isJdk8 || scalaVersion.value == Dependencies.Scala212) Seq.empty
-      else Seq("--release", "8")
-    ),
+    javacOptions ++= Seq("--release", "17"),
+    scalacOptions ++= Seq("--release", "17"),
     Test / logBuffered := false,
     Test / parallelExecution := false,
     // show full stack traces and test case durations
@@ -63,9 +52,7 @@ lazy val common: Seq[Setting[_]] =
       val pekkoProperties = System.getProperties.stringPropertyNames.asScala.toList.collect {
         case key: String if key.startsWith("pekko.") => "-D" + key + "=" + System.getProperty(key)
       }
-      val openModules =
-        if (isJdk17orHigher) Seq("--add-opens=java.base/java.util.concurrent=ALL-UNNAMED")
-        else Nil
+      val openModules = Seq("--add-opens=java.base/java.util.concurrent=ALL-UNNAMED")
       "-Xms1G" :: "-Xmx1G" :: "-XX:MaxDirectMemorySize=256M" :: pekkoProperties ++ openModules
     },
     projectInfoVersion := (if (isSnapshot.value) "snapshot" else version.value),
@@ -119,6 +106,3 @@ lazy val docs = (project in file("docs"))
     apidocRootPackage := "org.apache.pekko")
 
 lazy val dontPublish = Seq(publish / skip := true, Compile / publishArtifact := false)
-
-lazy val isJdk8 =
-  VersionNumber(sys.props("java.specification.version")).matchesSemVer(SemanticSelector(s"=1.8"))
