@@ -246,7 +246,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
         (key, path, levenshteinDistance.apply(key, name))
       }
       .filter(_._3 >= 0)
-      .sortBy(_._3)
+      .sortBy { case (_, path, distance) => (distance, path) }
       .take(maxSimilarItems)
       .map(_._2)
 
