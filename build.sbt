@@ -34,9 +34,9 @@ lazy val common: Seq[Setting[_]] =
     // Setting javac options in common allows IntelliJ IDEA to import them automatically
     Compile / javacOptions ++= Seq("-encoding", "UTF-8"),
     scalacOptions ++= {
-      var scalacOptionsBase = Seq("-encoding", "UTF-8", "-feature", "-unchecked", "-deprecation")
+      val scalacOptionsBase = Seq("-encoding", "UTF-8", "-feature", "-unchecked", "-deprecation")
       if (scalaVersion.value == Dependencies.Scala213)
-        scalacOptionsBase ++: Seq("-Xfatal-warnings", "-Xlint", "-Ywarn-dead-code", "-Wconf:cat=deprecation:info")
+        scalacOptionsBase ++: Seq("-Werror", "-Xlint", "-Wdead-code")
       else
         scalacOptionsBase
     },
