@@ -931,7 +931,7 @@ class ConfigCheckerSpec extends PekkoSpec {
 
     "not warn about paths with quotes" in {
       val config = ConfigFactory
-        .parseString("""pekko.grpc.client."*".ssl-config.hostnameVerifierClass = 37""")
+        .parseString("""pekko.grpc.client."*".ssl-config.protocol = "TLSv1.3"""")
         .withFallback(reference)
       val referenceWithGrpc = reference.withFallback(defaultGrpc).resolve
       val checker = new ConfigChecker(extSys, config, referenceWithGrpc)

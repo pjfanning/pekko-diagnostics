@@ -62,8 +62,7 @@ jobs:
       - name: Set up JDK ${{ matrix.javaVersion }}
         uses: coursier/setup-action@v3
         with:
-          distribution: temurin
-          java-version: ${{ matrix.javaVersion }}
+          jvm: temurin:${{ matrix.javaVersion }}
 
       - name: sbt test
         run: |-
