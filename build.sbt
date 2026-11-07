@@ -4,7 +4,6 @@ Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
 inThisBuild(
   Seq(
     organization := "com.github.pjfanning",
-    resolvers += "Apache Staging".at("https://repository.apache.org/content/groups/staging"),
     organizationName := "pjfanning",
     homepage := Some(url("https://github.com/pjfanning/pekko-diagnostics")),
     scmInfo := Some(
