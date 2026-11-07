@@ -22,9 +22,7 @@ import org.apache.pekko.persistence.testkit.PersistenceTestKitSnapshotPlugin
 import org.apache.pekko.testkit.EventFilter
 
 import com.typesafe.config.{ Config, ConfigFactory, ConfigValueFactory }
-import scala.annotation.nowarn
-import scala.collection.JavaConverters._
-import scala.collection.immutable
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 class ConfigCheckerSpec extends PekkoSpec {
@@ -65,14 +63,14 @@ class ConfigCheckerSpec extends PekkoSpec {
     new ConfigChecker(extSys, disabled, reference).check().warnings should ===(Nil)
   }
 
-  def assertCheckerKey(warnings: immutable.Seq[ConfigWarning], expectedCheckerKeys: String*): Unit =
+  def assertCheckerKey(warnings: Seq[ConfigWarning], expectedCheckerKeys: String*): Unit =
     warnings.map(_.checkerKey).toSet should ===(expectedCheckerKeys.toSet)
 
-  def assertPath(warnings: immutable.Seq[ConfigWarning], expectedPaths: String*): Unit =
+  def assertPath(warnings: Seq[ConfigWarning], expectedPaths: String*): Unit =
     warnings.flatMap(_.paths).toSet should ===(expectedPaths.toSet)
 
   // for copy paste into config-checkers.rst
-  def printDocWarnings(warnings: immutable.Seq[ConfigWarning]): Unit = {
+  def printDocWarnings(warnings: Seq[ConfigWarning]): Unit = {
     if (false) // change to true when updating documentation, or debugging
       warnings.foreach { w =>
         val msg = s"| ${ConfigChecker.format(w)} |"
@@ -920,18 +918,19 @@ class ConfigCheckerSpec extends PekkoSpec {
       warnings should be(Vector.empty)
     }
 
-    @nowarn("msg=possible missing interpolator")
     val defaultGrpc = ConfigFactory.parseString("""
       pekko.grpc.client."*" {
         host = ""
         port = 0
-        ssl-config = ${ssl-config}
+        service-discovery {
+          mechanism = "static"
+        }
       }
     """)
 
     "not warn about paths with quotes" in {
       val config = ConfigFactory
-        .parseString("""pekko.grpc.client."*".ssl-config.protocol = "TLSv1.3"""")
+        .parseString("""pekko.grpc.client."*".service-discovery.mechanism = "config"""")
         .withFallback(reference)
       val referenceWithGrpc = reference.withFallback(defaultGrpc).resolve
       val checker = new ConfigChecker(extSys, config, referenceWithGrpc)

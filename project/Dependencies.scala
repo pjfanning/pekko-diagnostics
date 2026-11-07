@@ -4,14 +4,13 @@
 import sbt._
 
 object Dependencies {
-  val Scala212 = "2.12.21"
   val Scala213 = "2.13.18"
   val Scala3 = "3.3.9"
-  val CrossScalaVersions = Seq(Scala213, Scala212, Scala3)
+  val CrossScalaVersions = Seq(Scala213, Scala3)
 
-  val PekkoVersion = "1.7.1"
+  val PekkoVersion = "2.0.0"
   val PekkoVersionInDocs = PekkoVersion.take(3)
-  val PekkoHttpVersionInDocs = "1.4"
+  val PekkoHttpVersionInDocs = "2.0"
   val ScalaTestVersion = "3.2.20"
 
   val commonsText = "org.apache.commons" % "commons-text" % "1.15.0" // ApacheV2

@@ -16,10 +16,10 @@ package org.apache.pekko.diagnostics
 import java.util.Locale
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
-import scala.collection.JavaConverters._
-import scala.collection.immutable
 import scala.collection.immutable.VectorBuilder
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
+import scala.jdk.DurationConverters._
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
@@ -34,17 +34,13 @@ import org.apache.commons.text.similarity.LevenshteinDistance
 
 object ConfigChecker {
 
-  final case class ValidationResults(warnings: immutable.Seq[ConfigWarning])
+  final case class ValidationResults(warnings: Seq[ConfigWarning])
 
-  final case class ConfigWarning(
-      checkerKey: String,
-      message: String,
-      properties: immutable.Seq[String],
-      defaults: immutable.Seq[String]) {
+  final case class ConfigWarning(checkerKey: String, message: String, properties: Seq[String], defaults: Seq[String]) {
 
     def propertiesAsString: String = properties.mkString(", ")
 
-    def paths: immutable.Seq[String] =
+    def paths: Seq[String] =
       properties.map(_.split("=")(0).trim)
 
     def pathsAsString: String = paths.mkString(", ")
@@ -109,8 +105,8 @@ object ConfigChecker {
       case LogWarnings =>
         val asyncCheckAfter =
           provider.classicSystem.settings.config
-            .getDuration("pekko.diagnostics.checker.async-check-after", MILLISECONDS)
-            .millis
+            .getDuration("pekko.diagnostics.checker.async-check-after")
+            .toScala
         if (asyncCheckAfter > Duration.Zero)
           provider.classicSystem.scheduler.scheduleOnce(asyncCheckAfter)(runChecks())(provider.classicSystem.dispatcher)
         else
@@ -221,7 +217,6 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
   private val knownDispatcherPrefixes = Set("pekko.", "play.", "cassandra-plugin-", "kafka.")
 
   private val knownSettings = {
-    import scala.collection.JavaConverters._
     def collectLeaves(path: String, list: ConfigObject): Seq[(String, String)] =
       list
         .entrySet()
@@ -381,7 +376,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
 
               pathList.removeLast()
 
-            case _ =>
+            case null =>
               // in case there would be something else
               ()
           }
@@ -513,7 +508,7 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
                   Nil)
               }
               pathList.removeLast()
-            case _ =>
+            case null =>
               // in case there would be something else
               ()
           }
@@ -766,9 +761,9 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
     ifEnabled("remote-watch-failure-detector") { checkerKey =>
       val path = "pekko.remote.watch-failure-detector"
 
-      val heartbeatInterval = config.getDuration(path + ".heartbeat-interval", MILLISECONDS).millis
-      val acceptable = config.getDuration(path + ".acceptable-heartbeat-pause", MILLISECONDS).millis
-      val reaper = config.getDuration(path + ".unreachable-nodes-reaper-interval", MILLISECONDS).millis
+      val heartbeatInterval = config.getDuration(path + ".heartbeat-interval").toScala
+      val acceptable = config.getDuration(path + ".acceptable-heartbeat-pause").toScala
+      val reaper = config.getDuration(path + ".unreachable-nodes-reaper-interval").toScala
 
       val w1 =
         if (heartbeatInterval < 500.millis)
@@ -959,9 +954,9 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
       val path = "pekko.cluster.failure-detector"
       val reaperPath = "pekko.cluster.unreachable-nodes-reaper-interval"
 
-      val heartbeatInterval = config.getDuration(path + ".heartbeat-interval", MILLISECONDS).millis
-      val acceptable = config.getDuration(path + ".acceptable-heartbeat-pause", MILLISECONDS).millis
-      val reaper = config.getDuration(reaperPath, MILLISECONDS).millis
+      val heartbeatInterval = config.getDuration(path + ".heartbeat-interval").toScala
+      val acceptable = config.getDuration(path + ".acceptable-heartbeat-pause").toScala
+      val reaper = config.getDuration(reaperPath).toScala
 
       val w1 =
         if (heartbeatInterval < 500.millis)
@@ -1067,10 +1062,10 @@ class ConfigChecker(system: ExtendedActorSystem, config: Config, reference: Conf
         val downRemovalPath = "pekko.cluster.down-removal-margin"
         val stableAfterPath = "pekko.cluster.split-brain-resolver.stable-after"
 
-        val stableAfter = config.getDuration(stableAfterPath, MILLISECONDS).millis
+        val stableAfter = config.getDuration(stableAfterPath).toScala
         val downRemoval = config.getString(downRemovalPath).toLowerCase(Locale.ROOT) match {
           case "off" => stableAfter // we are using a better default value whenSBR is enabled
-          case _     => config.getDuration(downRemovalPath, MILLISECONDS).millis
+          case _     => config.getDuration(downRemovalPath).toScala
         }
 
         val w1 =

@@ -260,7 +260,7 @@ object StarvationDetector {
       log: LoggingAdapter,
       config: StarvationDetectorSettings,
       hasTerminated: BooleanSupplier): Unit =
-    checkExecutionContext(ec, log, config, hasTerminated.getAsBoolean _)
+    checkExecutionContext(ec, log, config, () => hasTerminated.getAsBoolean)
 
   private type StackTrace = Array[StackTraceElement]
 
@@ -315,12 +315,10 @@ object StarvationDetector {
                   s"Thread states (total ${threadStatuses.size} thread): $states\n" +
                   s"Stack traces:\n$stacks"
                 }
+              case Failure(ex: java.lang.reflect.InaccessibleObjectException) =>
+                throw InaccessibleObjectException(ex.getMessage, ex.getCause) // stopping Starvation Detector
               case Failure(ex) =>
-                ex.getClass.getName match {
-                  case "java.lang.reflect.InaccessibleObjectException" => //FIXME avoid using class name when JDK 8 is not supported
-                    throw InaccessibleObjectException(ex.getMessage, ex.getCause) // stopping Starvation Detector
-                  case _ => s"[Could not get thread info because ${ex.toString}]"
-                }
+                s"[Could not get thread info because ${ex.toString}]"
             }
 
           log.warning(
